@@ -1,0 +1,17 @@
+{
+    "workbench.colorCustomizations": {
+        "tab.activeBackground": "#383b3b",
+        "minimap.background": "#00000000",
+        "scrollbar.shadow": "#00000000"
+    },
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "*.ql": "qyl",
+        "memory.h": "c",
+        "stdlib.h": "c",
+        "common.h": "c",
+        "chunk.h": "c",
+        "stdbool.h": "c",
+        "debug.h": "c"
+    }
+}
