@@ -9,12 +9,11 @@ static void resetStack() {
     vm.stackTop = vm.stack;
 }
 
-void initVm() {
+void initVM() {
     resetStack();
 }
 
 void freeVM() {
-
 }
 
 void push(Value value) {
@@ -28,7 +27,7 @@ Value pop() {
 }
 
 static InterpretResult run() {
-#define READ_BYTE() (vm.ip++)
+#define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 
     for (;;) {
@@ -40,7 +39,7 @@ static InterpretResult run() {
         printf(" ]");
     }
     printf("\n");
-    disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->count));
+    disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
 
 #endif
 
@@ -51,9 +50,7 @@ static InterpretResult run() {
                 push(constant);
                 break;
             }
-            case OP_NEGATE:
-                push(-pop());
-                break;
+            case OP_NEGATE: push(-pop()); break;
             case OP_RETRUN: {
                 printValue(pop());
                 printf("\n");
