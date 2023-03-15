@@ -1,5 +1,5 @@
-#ifndef azuza_debug_h
-#define azuza_debug_h
+#ifndef azura_debug_h
+#define azura_debug_h
 
 #include "chunk.h"
 
