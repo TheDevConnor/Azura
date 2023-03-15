@@ -1,1 +1,1 @@
-![image](./Azura%20v2/Images/azura_mascote_trimmed.png)
+![image](./.images/azura_mascote_trimmed.png)
