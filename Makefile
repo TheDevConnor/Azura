@@ -1,7 +1,7 @@
 CXX := g++
 CC := gcc
 
-CFLAGS := -Wall -03
+CFLAGS := -Wl,--subsystem,windows -municode -O2
 
 BIN_PATH := bin
 OBJ_PATH := obj
@@ -27,7 +27,7 @@ CLEAN_LIST := $(TARGET) \
 default: all
 
 $(TARGET): $(OBJ)
-	$(CC) $(CXXFLAGS) -o $@ $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c
 	$(CC) $(CCOBJFLAGS) -o $@ $<
