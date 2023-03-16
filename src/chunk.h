@@ -20,7 +20,7 @@ typedef struct {
     uint8_t* code;
     int* line;
     ValueArray constants;
-}Chunk;
+} Chunk;
 
 void initChunk(Chunk* chunk);
 void freeChunk(Chunk* chunk);

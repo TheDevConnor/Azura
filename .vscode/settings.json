@@ -4,6 +4,14 @@
         "limits": "c",
         "type_traits": "c",
         "compiler.h": "c",
-        "scanner.h": "c"
+        "scanner.h": "c",
+        "*.tcc": "c",
+        "typeinfo": "c",
+        "new": "c"
+    },
+    "workbench.colorCustomizations": {
+        "tab.activeBackground": "#383b3b",
+        "minimap.background": "#00000000",
+        "scrollbar.shadow": "#00000000"
     }
 }
