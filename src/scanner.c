@@ -146,6 +146,32 @@ static Token identifier() {
     return makeToken(identifierType()); 
 }
 
+static void skipWhiteSpace() {
+    for (;;) {
+        char c = peek();
+        switch (c) {
+            case ' ':
+            case '\r':
+            case '\t':
+                advance();
+                break;
+            case '\n':
+                scanner.line++;
+                advance();
+                break;
+            case '/':
+                if (peekNext() == '/') {
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                } else {
+                    return;
+                } 
+                break;
+            default:
+                return;
+        }
+    }
+}
+
 Token scanToken() {
     skipWhiteSpace();
     scanner.start = scanner.current;
@@ -189,32 +215,4 @@ Token scanToken() {
     }
 
     return errorToken("unexpected character.");
-}
-
-static void skipWhiteSpace() {
-    for (;;) {
-        char c = peek();
-        switch (c) {
-            case ' ':
-            case '\r':
-            case '\t':
-                advance();
-                break;
-            case '\n':
-                scanner.line++;
-                advance();
-                break;
-            case '/':
-                if (peekNext() == '/') {
-                    while (peek() != '\n' && !isAtEnd()) advance();
-                } else {
-                    return;
-                } break;
-            case '#':
-                while (peek() != '\n' && !isAtEnd()) advance();
-                break;
-            default:
-                return;
-        }
-    }
 }
