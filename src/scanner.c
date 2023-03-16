@@ -75,6 +75,22 @@ static Token string() {
     while(peek() != '"' && !isAtEnd()) {
         if(peek() == '\n') scanner.line++;
         advance();
+
+        if (peek() == '%' && !isAtEnd()) {
+            if (peekNext() == '{') {
+                advance();
+                while(peek() != '}' && !isAtEnd()) {
+                    if(peek() == '\n') scanner.line++;
+                    advance();
+                }
+            }
+
+            if (peek() == '}') {
+                makeToken(TOKEN_INTERPOLATEION);
+            } else {
+                return errorToken("Unterminated String");
+            }
+        }
     }
 
     if (isAtEnd()) return errorToken("Unterminated String");
