@@ -53,11 +53,11 @@ static bool match(char expected) {
     return true;
 }
 
-static Token makeToken(const char* message) {
+static Token makeToken(TokenType type) {
     Token token;
-    token.type = TOKEN_ERROR;
-    token.start = message;
-    token.length = (int)strlen(message);
+    token.type = type;
+    token.start = scanner.start;
+    token.length = (int)(scanner.current - scanner.start);
     token.line = scanner.line;
     return token;
 }
@@ -93,6 +93,7 @@ static Token number() {
 
         while (isDigit(peekNext())) advance();
     }
+    return makeToken(TOKEN_NUMBER);
 }
 
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
@@ -142,8 +143,7 @@ static TokenType identifierType() {
 
 static Token identifier() {
     while (isAlpha(peek()) || isDigit(peek())) advance();
-    return makeToken(identifierType());
-    
+    return makeToken(identifierType()); 
 }
 
 Token scanToken() {
