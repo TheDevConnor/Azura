@@ -15,28 +15,18 @@ typedef enum {
     OBJ_STRING,
 } ObjectType;
 
-struct Obj {
+typedef struct Obj {
     ObjectType type;
-};
+} Obj;
 
-// typedef struct {
-//     ObjectType type;
-// } Obj;
-
-struct ObjString {
+typedef struct ObjString {
     Obj obj;
     int length;
     char* chars;
-};
+} ObjString;
 
-// typedef struct {
-//     Obj obj;
-//     int length;
-//     char* chars;
-// } ObjString;
-
-ObjString* takeString(char* chars, int length);
-ObjString* copyString(const char* chars, int length);
+struct ObjString* takeString(char* chars, int length);
+struct ObjString* copyString(const char* chars, int length);
 void printObject(Value value);
 
 static inline bool isObjType(Value value, ObjectType type) {
