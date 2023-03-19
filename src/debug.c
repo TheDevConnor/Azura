@@ -15,6 +15,7 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset) {
     printf("%-16s %4d '", name, constant);
     printValue(chunk->constants.values[constant]);
     printf("'\n");
+    return offset + 2;
 }
 
 static int simpleInstruction(const char* name, int offset) {
