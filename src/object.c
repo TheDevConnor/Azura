@@ -6,8 +6,8 @@
 #include "value.h"
 #include "vm.h"
 
-#define ALLOCATE_OBJ(type, objectType) \
-  (type*)allocateObject(sizeof(type), objectType);
+#define ALLOCATE_OBJ(type, ObjectType) \
+  (type*)allocateObject(sizeof(type), ObjectType);
 
 static Obj* allocateObject(size_t size, ObjectType type) {
   Obj* object = (Obj*)reallocate(NULL, 0, size);
