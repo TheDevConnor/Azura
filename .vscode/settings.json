@@ -7,7 +7,8 @@
         "scanner.h": "c",
         "*.tcc": "c",
         "typeinfo": "c",
-        "new": "c"
+        "new": "c",
+        "value.h": "c"
     },
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#383b3b",
