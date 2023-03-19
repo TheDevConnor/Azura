@@ -17,6 +17,7 @@ typedef enum {
 
 typedef struct Obj {
     ObjectType type;
+    struct Obj* next;
 } Obj;
 
 typedef struct ObjString {

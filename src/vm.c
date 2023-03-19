@@ -62,8 +62,8 @@ static void concatenate() {
 
     int length = a->length + b->length;
     char* chars = ALLOCATE(char, length + 1);
-    memcp(chars, a->chars, a->length);
-    memcp(chars + a->length, b->chars, b->length);
+    memcpy(chars, a->chars, a->length);
+    memcpy(chars + a->length, b->chars, b->length);
     chars[length] = '\0';
 
     ObjString* result = takeString(chars, length);
@@ -75,7 +75,7 @@ static InterpretResult run() {
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
 #define BINARY_OP(valueType, op) \
     do { \
-        if(!IS_NUMBER(peek(0))) || !IS_NUMBER(peek(1)) { \
+        if(!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
             runtimeError("Operands must be a number"); \
             return INTERPRET_RUNTIME_ERROR; \
         } \
@@ -140,7 +140,7 @@ static InterpretResult run() {
                     runtimeError("Operand must be a number");
                     return INTERPRET_RUNTIME_ERROR;
                 }
-                push(NUMBER_VAL(AS_NUMBER(-pop())));
+                push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
             case OP_RETRUN: {
                 printValue(pop());
