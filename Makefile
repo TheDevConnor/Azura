@@ -24,7 +24,7 @@ SOURCE_FILES := $(wildcard $(SRC_PATH)/*.c*)
 
 all:
 	
-	gcc -o $(TARGET) $(SOURCE_FILES) $(CFLAGS)
+	$(CC) -o $(TARGET) $(SOURCE_FILES) $(CFLAGS)
 
 clean:
 	$(RM) $(TARGET)
