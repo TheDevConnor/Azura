@@ -1,4 +1,3 @@
-// this  is a comment
-info "Hello"
-info "World!"
-info 1 + 2.5
+have beverage := "cafe au lait";
+have breakfast := "beignets with " + beverage;
+info breakfast;

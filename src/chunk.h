@@ -20,6 +20,7 @@ typedef enum {
   OP_NOT,
   OP_NEGATE,
   OP_INFO,
+  OP_GET_GLOBAL,
   OP_DEFINE_GLOBAL,
   OP_RETRUN,
 } OpCode;

@@ -119,6 +119,17 @@ static InterpretResult run() {
     case OP_POP:
       pop();
       break;
+    case OP_GET_GLOBAL: {
+      ObjString *name = READ_STRING();
+      Value value;
+      if (!tableGet(&vm.globlas, name, &value)) {
+        runtimeError("Undefined variable '%s'.", name->chars);
+        return INTERPRET_RUNTIME_ERROR;
+      }
+
+      push(value);
+      break;
+    }
     case OP_DEFINE_GLOBAL:
       ObjString *name = READ_STRING();
       tableSet(&vm.globlas, name, peek(0));
