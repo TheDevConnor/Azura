@@ -18,14 +18,14 @@ void initScanner(const char* source) {
     scanner.line = 1;
 }
 
-static bool isDigit(char c) {
-    return c >= '0' && c <= '9';
-}
-
 static bool isAlpha(char c) {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
             c == '_';
+}
+
+static bool isDigit(char c) {
+    return c >= '0' && c <= '9';
 }
 
 static bool isAtEnd() {
@@ -71,45 +71,30 @@ static Token errorToken(const char* message) {
     return token;
 }
 
-static Token string() {
-    while(peek() != '"' && !isAtEnd()) {
-        if(peek() == '\n') scanner.line++;
-        advance();
-
-        if (peek() == '%' && !isAtEnd()) {
-            if (peekNext() == '{') {
+static void skipWhiteSpace() {
+    for (;;) {
+        char c = peek();
+        switch (c) {
+            case ' ':
+            case '\r':
+            case '\t':
                 advance();
-                while(peek() != '}' && !isAtEnd()) {
-                    if(peek() == '\n') scanner.line++;
-                    advance();
-                }
-            }
-
-            if (peek() == '}') {
-                makeToken(TOKEN_INTERPOLATEION);
-            } else {
-                return errorToken("Unterminated String");
-            }
+                break;
+            case '\n':
+                scanner.line++;
+                advance();
+                break;
+            case '/':
+                if (peekNext() == '/') {
+                    while (peek() != '\n' && !isAtEnd()) advance();
+                } else {
+                    return;
+                } 
+                break;
+            default:
+                return;
         }
     }
-
-    if (isAtEnd()) return errorToken("Unterminated String");
-
-    advance();
-    return makeToken(TOKEN_STRING);
-}
-
-static Token number() {
-    while(isDigit(peek())) advance();
-
-    // Look for the fractional part
-    if(peek() == '.' && isDigit(peekNext())){
-        // cosumes the dot
-        advance();
-
-        while (isDigit(peekNext())) advance();
-    }
-    return makeToken(TOKEN_NUMBER);
 }
 
 static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
@@ -162,30 +147,29 @@ static Token identifier() {
     return makeToken(identifierType()); 
 }
 
-static void skipWhiteSpace() {
-    for (;;) {
-        char c = peek();
-        switch (c) {
-            case ' ':
-            case '\r':
-            case '\t':
-                advance();
-                break;
-            case '\n':
-                scanner.line++;
-                advance();
-                break;
-            case '/':
-                if (peekNext() == '/') {
-                    while (peek() != '\n' && !isAtEnd()) advance();
-                } else {
-                    return;
-                } 
-                break;
-            default:
-                return;
-        }
+static Token number() {
+    while(isDigit(peek())) advance();
+
+    // Look for the fractional part
+    if(peek() == '.' && isDigit(peekNext())){
+        // cosumes the dot
+        advance();
+
+        while (isDigit(peek())) advance();
     }
+    return makeToken(TOKEN_NUMBER);
+}
+
+static Token string() {
+    while(peek() != '"' && !isAtEnd()) {
+        if(peek() == '\n') scanner.line++;
+        advance();
+    }
+
+    if (isAtEnd()) return errorToken("Unterminated String");
+
+    advance();
+    return makeToken(TOKEN_STRING);
 }
 
 Token scanToken() {
