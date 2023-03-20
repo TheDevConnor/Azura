@@ -87,6 +87,9 @@ static void skipWhiteSpace() {
             case '/':
                 if (peekNext() == '/') {
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else if (peekNext() == '*') {
+                    // TODO:: Add in block comments
+                    return;
                 } else {
                     return;
                 } 
