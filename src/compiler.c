@@ -1,8 +1,11 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "chunk.h"
 #include "common.h"
 #include "compiler.h"
+#include "object.h"
 #include "scanner.h"
 
 #ifdef DEBUG_PRINT_CODE
@@ -135,9 +138,34 @@ static void endCompiler() {
 #endif
 }
 
+static uint8_t identifierConstant(Token *name) {
+  return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
+}
+
+static uint8_t parserVaruable(const char *errorMessage) {
+  consume(TOKEN_IDENTIFIER, errorMessage);
+  return identifierConstant(&parser.previous);
+}
+
+static void defineVariable(uint8_t global) {
+  emitBytes(OP_DEFINE_GLOBAL, global);
+}
+
 static void printStatement() {
   expression();
   emitByte(OP_INFO);
+}
+
+static void varDeclaration() {
+  uint8_t global = parserVaruable("Expected a variable name!");
+
+  if (match(TOKEN_WALRUS)) {
+    expression();
+  } else {
+    emitByte(OP_NIL);
+  }
+
+  defineVariable(global);
 }
 
 static void synchronize() {
@@ -175,6 +203,9 @@ static void statement() {
     printStatement();
   } else {
     expressionStatement();
+  }
+  if (match(TOKEN_VAR)) {
+    varDeclaration();
   }
 }
 
