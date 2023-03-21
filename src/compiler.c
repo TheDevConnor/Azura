@@ -164,7 +164,7 @@ static void varDeclaration() {
   } else {
     emitByte(OP_NIL);
   }
-  consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration!");
+  // consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration!");
 
   defineVariable(global);
 }
@@ -207,13 +207,14 @@ static void statement() {
   } else {
     expressionStatement();
   }
-  if (match(TOKEN_VAR)) {
-    varDeclaration();
-  }
 }
 
 static void declaration() {
-  statement();
+  if (match(TOKEN_VAR)) {
+    varDeclaration();
+  } else {
+    statement();
+  }
 
   if (parser.panicMode)
     synchronize();

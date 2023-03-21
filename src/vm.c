@@ -33,11 +33,12 @@ void initVM() {
   resetStack();
   vm.objects = NULL;
 
-  initTable(&vm.globlas);
+  initTable(&vm.globals);
   initTable(&vm.strings);
 }
 
 void freeVM() {
+  freeTable(&vm.globals);
   freeTable(&vm.strings);
   freeObjects();
 }
@@ -122,7 +123,7 @@ static InterpretResult run() {
     case OP_GET_GLOBAL: {
       ObjString *name = READ_STRING();
       Value value;
-      if (!tableGet(&vm.globlas, name, &value)) {
+      if (!tableGet(&vm.globals, name, &value)) {
         runtimeError("Undefined variable '%s'.", name->chars);
         return INTERPRET_RUNTIME_ERROR;
       }
@@ -132,7 +133,7 @@ static InterpretResult run() {
     }
     case OP_DEFINE_GLOBAL:
       ObjString *name = READ_STRING();
-      tableSet(&vm.globlas, name, peek(0));
+      tableSet(&vm.globals, name, peek(0));
       pop();
       break;
     case OP_EQUAL: {
