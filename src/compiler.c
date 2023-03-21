@@ -21,18 +21,6 @@ typedef struct {
 } Parser;
 
 typedef enum {
-    Black = 30,
-    Red = 31,
-    Green = 32,
-    Yellow = 33,
-    Blue = 34,
-    Magenta = 35,
-    Cyan = 36,
-    White = 37,
-    Reset = 0
-} TerminalColor;
-
-typedef enum {
   PREC_NONE,
   PREC_ASSINMENT,   // :=
   PREC_OR,          // or
@@ -46,7 +34,8 @@ typedef enum {
   PREC_PRIMARY,
 } Precedence;
 
-typedef void (*ParseFn)();
+typedef void (*ParseFn)(bool canAssign);
+
 typedef struct {
   ParseFn prefix;
   ParseFn infix;
@@ -54,40 +43,13 @@ typedef struct {
 } ParseRule;
 
 Parser parser;
-TerminalColor tc;
 Chunk *compilingChunk;
-
-char* getTerminalColor(TerminalColor color) {
-    char* str = malloc(sizeof(char) * 12);
-    sprintf(str, "\033[%dm", color);
-    return str;
-}
-
-char* colorizeSTR(const char* str, TerminalColor color) {
-    char* colorStr = getTerminalColor(color);
-    size_t length = strlen(str) + strlen(colorStr) + strlen(getTerminalColor(Reset)) + 1;
-    char* result = malloc(sizeof(char) * length);
-    sprintf(result, "%s%s%s", colorStr, str, getTerminalColor(Reset));
-    free(colorStr);
-    return result;
-}
-
-char* colorizeInt(int value, TerminalColor color) {
-    char* colorStr = getTerminalColor(color);
-    char* resetStr = getTerminalColor(Reset);
-    int length = snprintf(NULL, 0, "%d", value) + strlen(colorStr) + strlen(resetStr) + 1;
-    char* result = malloc(length * sizeof(char));
-    snprintf(result, length, "%s%d%s", colorStr, value, resetStr);
-    return result;
-}
-
-
-static void parsePrecedence(Precedence precedence);
 
 static Chunk *currentChunk() { return compilingChunk; }
 
 static void errorAt(Token *token, const char *message) {
-  if (parser.panicMode) return;
+  if (parser.panicMode)
+    return;
 
   parser.panicMode = true;
 
@@ -140,6 +102,8 @@ static bool match(TokenType type) {
   advance();
   return true;
 }
+
+static void parsePrecedence(Precedence precedence);
 
 static void expression() { parsePrecedence(PREC_ASSINMENT); }
 
@@ -199,7 +163,6 @@ static void varDeclaration() {
   } else {
     emitByte(OP_NIL);
   }
-  // consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration!");
 
   defineVariable(global);
 }
@@ -231,14 +194,15 @@ static void synchronize() {
 
 static void expressionStatement() {
   expression();
-  consume(TOKEN_SEMICOLON, "Expected ';' after expression!");
+  // consume(TOKEN_SEMICOLON, "Expected ';' after expression!");
   emitByte(OP_POP);
 }
 
 static void statement() {
   if (match(TOKEN_INFO)) {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value! \n Try 'info 1 + 1;' happy coding!");
+    consume(TOKEN_SEMICOLON,
+            "Expected ';' after value! \nTry 'info 1 + 1;' happy coding!");
     emitByte(OP_INFO);
   } else {
     expressionStatement();
@@ -261,29 +225,37 @@ static void statement();
 static void declaration();
 static ParseRule *getRule(TokenType type);
 
-static void grouping() {
+static void grouping(bool canAssign) {
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression!");
 }
 
-static void number() {
+static void number(bool canAssign) {
   double value = strtod(parser.previous.start, NULL);
   emitConstant(NUMBER_VAL(value));
 }
 
-static void string() {
+static void string(bool canAssign) {
   emitConstant(OBJ_VAL(
       copyString(parser.previous.start + 1, parser.previous.length - 2)));
 }
 
-static void namedVariable(Token name) {
+static void namedVariable(Token name, bool canAssign) {
   uint8_t arg = identifierConstant(&name);
-  emitBytes(OP_GET_GLOBAL, arg);
+
+  if (canAssign && match(TOKEN_EQUAL)) {
+    expression();
+    emitBytes(OP_SET_GLOBAL, arg);
+  } else {
+    emitBytes(OP_GET_GLOBAL, arg);
+  }
 }
 
-static void variable() { namedVariable(parser.previous); }
+static void variable(bool canAssign) {
+  namedVariable(parser.previous, canAssign);
+}
 
-static void unary() {
+static void unary(bool canAssign) {
   TokenType operationType = parser.previous.type;
 
   // compile the operand
@@ -302,7 +274,7 @@ static void unary() {
   }
 }
 
-static void binary() {
+static void binary(bool canAssign) {
   TokenType operationType = parser.previous.type;
   ParseRule *rule = getRule(operationType);
   parsePrecedence((Precedence)(rule->precedence + 1));
@@ -343,7 +315,7 @@ static void binary() {
   }
 }
 
-static void literal() {
+static void literal(bool canAssign) {
   switch (parser.previous.type) {
   case TOKEN_FALSE:
     emitByte(OP_FALSE);
@@ -413,12 +385,17 @@ static void parsePrecedence(Precedence precedence) {
     return;
   }
 
-  prefixRule();
+  bool canAssign = precedence <= PREC_ASSINMENT;
+  prefixRule(canAssign);
 
   while (precedence <= getRule(parser.current.type)->precedence) {
     advance();
     ParseFn infixRule = getRule(parser.previous.type)->infix;
-    infixRule();
+    infixRule(canAssign);
+  }
+
+  if (canAssign && match(TOKEN_EQUAL)) {
+    error("Invalid assignment target!");
   }
 }
 

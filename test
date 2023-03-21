@@ -1,5 +1,16 @@
-have float := 35.97
-have math := 100 + float
-have string := "Hello World" + " " + "I am a string"
-info math;
-info string;
+// test case 1
+have breakfast := "eggs"
+have berverage := "cafe au lait"
+breakfast = "eggs with " + berverage;
+info breakfast;
+
+// test case 2
+// have berverage := "cafe au lait"
+// breakfast = "eggs with" + berverage;
+// info breakfast;
+
+// test case 1
+//have breakfast := "eggs"
+//have berverage := "cafe au lait"
+//breakfast = "eggs with " + berverage;
+//info breakfast

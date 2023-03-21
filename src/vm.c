@@ -120,6 +120,17 @@ static InterpretResult run() {
     case OP_POP:
       pop();
       break;
+    case OP_SET_GLOBAL: {
+      ObjString *name = READ_STRING();
+      if (tableSet(&vm.globals, name, peek(0))) {
+        tableDelete(&vm.globals, name);
+        runtimeError("Variable '%s' is undefined! \nTry doing something like "
+                     "'have [your variable name] := 0'. Happy coding!",
+                     name->chars);
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      break;
+    }
     case OP_GET_GLOBAL: {
       ObjString *name = READ_STRING();
       Value value;
@@ -156,7 +167,8 @@ static InterpretResult run() {
         double a = AS_NUMBER(pop());
         push(NUMBER_VAL(a + b));
       } else {
-        runtimeError("Operations must be two numbers or two string. \nFor example: 1 + 1 or \"Hello\" + \"World\". Happy coding!");
+        runtimeError("Operations must be two numbers or two string. \nFor "
+                     "example: 1 + 1 or \"Hello\" + \"World\". Happy coding!");
         return INTERPRET_RUNTIME_ERROR;
       }
       break;
