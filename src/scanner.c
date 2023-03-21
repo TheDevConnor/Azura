@@ -18,8 +18,6 @@ void initScanner(const char *source) {
   scanner.line = 1;
 }
 
-static const char *getLineError() { return scanner.start; }
-
 static bool isAlpha(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }

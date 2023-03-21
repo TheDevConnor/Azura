@@ -33,7 +33,6 @@ typedef struct {
     int line;
 } Token;
 
-static const char* getLineError();
 void initScanner(const char* source);
 Token scanToken();
 

@@ -156,7 +156,7 @@ static InterpretResult run() {
         double a = AS_NUMBER(pop());
         push(NUMBER_VAL(a + b));
       } else {
-        runtimeError("Operations must be two numbers or two string.");
+        runtimeError("Operations must be two numbers or two string. \nFor example: 1 + 1 or \"Hello\" + \"World\". Happy coding!");
         return INTERPRET_RUNTIME_ERROR;
       }
       break;

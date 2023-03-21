@@ -87,31 +87,21 @@ static void parsePrecedence(Precedence precedence);
 static Chunk *currentChunk() { return compilingChunk; }
 
 static void errorAt(Token *token, const char *message) {
-  if (parser.panicMode)
-      return;
-  parser.panicMode = true;
-  // const char *lineError = getLineError();
+  if (parser.panicMode) return;
 
-  int line = token->line;
+  parser.panicMode = true;
+
+  fprintf(stderr, "[line %d] Error", token->line);
 
   if (token->type == TOKEN_EOF) {
     fprintf(stderr, " at end");
   } else if (token->type == TOKEN_ERROR) {
-    // Nothing
+    // Nothing.
   } else {
-    if (line < 10) {
-      fprintf(stderr, "[src/test.az-->%s]::%s '%.*s'\n",colorizeInt(line, Magenta), message, token->length, token->start);
-      fprintf(stderr, "0%d | %.*s \n", line - 1 /*(int)(lineError - lineError), lineError*/);
-      fprintf(stderr, "0%d | %.*s \n",line /*(int)(lineError - lineError), lineError*/);
-      fprintf(stderr, "0%d | %.*s \n", line + 1 /*(int)(lineError - lineError), lineError*/);
-    } else {
-      fprintf(stderr, "[src/test.az-->%d]::%s '%.*s'\n", token->line, message, token->length, token->start);
-      fprintf(stderr, "%d | %.*s \n", line - 1 /*(int)(lineError - lineError), lineError*/);
-      fprintf(stderr, "%d | %.*s \n",line /*(int)(lineError - lineError), lineError*/);
-      fprintf(stderr, "%d | %.*s \n", line + 1 /*(int)(lineError - lineError), lineError*/);
-    }
+    fprintf(stderr, " at '%.*s'", token->length, token->start);
   }
 
+  fprintf(stderr, ": %s\n", message);
   parser.hadError = true;
 }
 
@@ -248,7 +238,7 @@ static void expressionStatement() {
 static void statement() {
   if (match(TOKEN_INFO)) {
     expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value!");
+    consume(TOKEN_SEMICOLON, "Expected ';' after value! \n Try 'info 1 + 1;' happy coding!");
     emitByte(OP_INFO);
   } else {
     expressionStatement();
@@ -419,7 +409,7 @@ static void parsePrecedence(Precedence precedence) {
   advance();
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
-    error("Unexpected expression");
+    error("Expect expression.");
     return;
   }
 

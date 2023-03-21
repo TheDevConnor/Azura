@@ -1,4 +1,5 @@
 have float := 35.97
-have math := 100 + float;
+have math := 100 + float
+have string := "Hello World" + " " + "I am a string"
 info math;
-
+info string;
