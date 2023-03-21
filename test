@@ -1,8 +1,4 @@
-have beverage := "cafe au lait"
-have breakfast := "beignets with " + beverage
-info breakfast;
-
 have float := 35.97
-have math := 100 + float
+have math := 100 + float;
 info math;
 

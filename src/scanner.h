@@ -29,9 +29,11 @@ typedef struct {
     TokenType type;
     const char* start;
     int length;
+    int pos;
     int line;
 } Token;
 
+static const char* getLineError();
 void initScanner(const char* source);
 Token scanToken();
 

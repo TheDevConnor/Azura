@@ -18,6 +18,8 @@ void initScanner(const char *source) {
   scanner.line = 1;
 }
 
+static const char *getLineError() { return scanner.start; }
+
 static bool isAlpha(char c) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
 }
@@ -54,6 +56,8 @@ static Token makeToken(TokenType type) {
   token.start = scanner.start;
   token.length = (int)(scanner.current - scanner.start);
   token.line = scanner.line;
+  token.pos = 0;
+
   return token;
 }
 

@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "chunk.h"
 #include "common.h"
@@ -49,19 +50,30 @@ static Chunk *currentChunk() { return compilingChunk; }
 
 static void errorAt(Token *token, const char *message) {
   if (parser.panicMode)
-    return;
+      return;
   parser.panicMode = true;
-  fprintf(stderr, "[line %d] Error", token->line);
+  // const char *lineError = getLineError();
+
+  int line = token->line;
 
   if (token->type == TOKEN_EOF) {
     fprintf(stderr, " at end");
   } else if (token->type == TOKEN_ERROR) {
     // Nothing
   } else {
-    fprintf(stderr, " at '%.*s'", token->length, token->start);
+    if (line < 10) {
+      fprintf(stderr, "[src/test.az-->%d]::%s '%.*s'\n", token->line, message, token->length, token->start);
+      fprintf(stderr, "0%d | %.*s \n", line - 1 /*(int)(lineError - lineError), lineError*/);
+      fprintf(stderr, "0%d | %.*s \n", line /*(int)(lineError - lineError), lineError*/);
+      fprintf(stderr, "0%d | %.*s \n", line + 1 /*(int)(lineError - lineError), lineError*/);
+    } else {
+      fprintf(stderr, "[src/test.az-->%d]::%s '%.*s'\n", token->line, message, token->length, token->start);
+      fprintf(stderr, "%d | %.*s \n", line - 1 /*(int)(lineError - lineError), lineError*/);
+      fprintf(stderr, "%d | %.*s \n", line /*(int)(lineError - lineError), lineError)*/);
+      fprintf(stderr, "%d | %.*s \n", line + 1 /*(int)(lineError - lineError), lineError*/);
+    }
   }
 
-  fprintf(stderr, ": %s\n", message);
   parser.hadError = true;
 }
 
@@ -369,7 +381,7 @@ static void parsePrecedence(Precedence precedence) {
   advance();
   ParseFn prefixRule = getRule(parser.previous.type)->prefix;
   if (prefixRule == NULL) {
-    error("Expected expression");
+    error("Unexpected expression");
     return;
   }
 
