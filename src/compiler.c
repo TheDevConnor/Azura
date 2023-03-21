@@ -151,11 +151,6 @@ static void defineVariable(uint8_t global) {
   emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
-static void printStatement() {
-  expression();
-  emitByte(OP_INFO);
-}
-
 static void varDeclaration() {
   uint8_t global = parserVaruable("Expected a variable name!");
 
@@ -196,6 +191,7 @@ static void synchronize() {
 
 static void expressionStatement() {
   expression();
+  consume(TOKEN_SEMICOLON, "Expected ';' after expression!");
   emitByte(OP_POP);
 }
 
@@ -203,7 +199,7 @@ static void statement() {
   if (match(TOKEN_INFO)) {
     expression();
     consume(TOKEN_SEMICOLON, "Expected ';' after value!");
-    emitByte(OP_POP);
+    emitByte(OP_INFO);
   } else {
     expressionStatement();
   }
