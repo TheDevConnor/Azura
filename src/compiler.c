@@ -21,6 +21,18 @@ typedef struct {
 } Parser;
 
 typedef enum {
+    Black = 30,
+    Red = 31,
+    Green = 32,
+    Yellow = 33,
+    Blue = 34,
+    Magenta = 35,
+    Cyan = 36,
+    White = 37,
+    Reset = 0
+} TerminalColor;
+
+typedef enum {
   PREC_NONE,
   PREC_ASSINMENT,   // :=
   PREC_OR,          // or
@@ -42,7 +54,33 @@ typedef struct {
 } ParseRule;
 
 Parser parser;
+TerminalColor tc;
 Chunk *compilingChunk;
+
+char* getTerminalColor(TerminalColor color) {
+    char* str = malloc(sizeof(char) * 12);
+    sprintf(str, "\033[%dm", color);
+    return str;
+}
+
+char* colorizeSTR(const char* str, TerminalColor color) {
+    char* colorStr = getTerminalColor(color);
+    size_t length = strlen(str) + strlen(colorStr) + strlen(getTerminalColor(Reset)) + 1;
+    char* result = malloc(sizeof(char) * length);
+    sprintf(result, "%s%s%s", colorStr, str, getTerminalColor(Reset));
+    free(colorStr);
+    return result;
+}
+
+char* colorizeInt(int value, TerminalColor color) {
+    char* colorStr = getTerminalColor(color);
+    char* resetStr = getTerminalColor(Reset);
+    int length = snprintf(NULL, 0, "%d", value) + strlen(colorStr) + strlen(resetStr) + 1;
+    char* result = malloc(length * sizeof(char));
+    snprintf(result, length, "%s%d%s", colorStr, value, resetStr);
+    return result;
+}
+
 
 static void parsePrecedence(Precedence precedence);
 
@@ -62,14 +100,14 @@ static void errorAt(Token *token, const char *message) {
     // Nothing
   } else {
     if (line < 10) {
-      fprintf(stderr, "[src/test.az-->%d]::%s '%.*s'\n", token->line, message, token->length, token->start);
+      fprintf(stderr, "[src/test.az-->%s]::%s '%.*s'\n",colorizeInt(line, Magenta), message, token->length, token->start);
       fprintf(stderr, "0%d | %.*s \n", line - 1 /*(int)(lineError - lineError), lineError*/);
-      fprintf(stderr, "0%d | %.*s \n", line /*(int)(lineError - lineError), lineError*/);
+      fprintf(stderr, "0%d | %.*s \n",line /*(int)(lineError - lineError), lineError*/);
       fprintf(stderr, "0%d | %.*s \n", line + 1 /*(int)(lineError - lineError), lineError*/);
     } else {
       fprintf(stderr, "[src/test.az-->%d]::%s '%.*s'\n", token->line, message, token->length, token->start);
       fprintf(stderr, "%d | %.*s \n", line - 1 /*(int)(lineError - lineError), lineError*/);
-      fprintf(stderr, "%d | %.*s \n", line /*(int)(lineError - lineError), lineError)*/);
+      fprintf(stderr, "%d | %.*s \n",line /*(int)(lineError - lineError), lineError*/);
       fprintf(stderr, "%d | %.*s \n", line + 1 /*(int)(lineError - lineError), lineError*/);
     }
   }
