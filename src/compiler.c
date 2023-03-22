@@ -115,10 +115,6 @@ static bool match(TokenType type) {
   return true;
 }
 
-static void parsePrecedence(Precedence precedence);
-
-static void expression() { parsePrecedence(PREC_ASSINMENT); }
-
 static void emitByte(uint8_t byte) {
   writeChunk(currentChunk(), byte, parser.previous.line);
 }
@@ -160,6 +156,18 @@ static void endCompiler() {
 #endif
 }
 
+static void beginScope() { current->scopeDepth++; }
+
+static void endScope() { current->scopeDepth--; }
+
+static void expression();
+static void statement();
+static void declaration();
+static ParseRule *getRule(TokenType type);
+static void parsePrecedence(Precedence precedence);
+
+static void expression() { parsePrecedence(PREC_ASSINMENT); }
+
 static uint8_t identifierConstant(Token *name) {
   return makeConstant(OBJ_VAL(copyString(name->start, name->length)));
 }
@@ -172,88 +180,6 @@ static uint8_t parserVaruable(const char *errorMessage) {
 static void defineVariable(uint8_t global) {
   emitBytes(OP_DEFINE_GLOBAL, global);
 }
-
-static void varDeclaration() {
-  uint8_t global = parserVaruable("Expected a variable name!");
-
-  if (match(TOKEN_WALRUS)) {
-    expression();
-  } else {
-    emitByte(OP_NIL);
-  }
-
-  if (match(TOKEN_EQUAL)) {
-    error("\nFor assining a variable use the operation of ':='.\nFor example "
-          "'have add := 45.2 + 2'. Happy coding!");
-  }
-
-  if (match(TOKEN_SEMICOLON)) {
-    error("\nWoops! you used a semicolon at the end of the variable "
-          "declaration!\n "
-          "You only need to use a ';' at the end of an info statement. Happy "
-          "coding!");
-  }
-
-  defineVariable(global);
-}
-
-static void synchronize() {
-  parser.panicMode = false;
-
-  while (parser.current.type != TOKEN_EOF) {
-    if (parser.previous.type == TOKEN_SEMICOLON)
-      return;
-    switch (parser.current.type) {
-    case TOKEN_CLASS:
-    case TOKEN_FUNC:
-    case TOKEN_VAR:
-    case TOKEN_FOR:
-    case TOKEN_IF:
-    case TOKEN_WHILE:
-    case TOKEN_INFO:
-    case TOKEN_RETURN:
-      return;
-
-    default: // Do Nothing
-        ;
-    }
-
-    advance();
-  }
-}
-
-static void expressionStatement() {
-  expression();
-  // consume(TOKEN_SEMICOLON, "Expected ';' after expression!");
-  emitByte(OP_POP);
-}
-
-static void statement() {
-  if (match(TOKEN_INFO)) {
-    expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value! \nTry something like "
-                             "this 'info 1 + 1;' happy coding!");
-    emitByte(OP_INFO);
-  } else {
-    expressionStatement();
-  }
-}
-
-static void declaration() {
-  if (match(TOKEN_VAR)) {
-    varDeclaration();
-  } else {
-    statement();
-  }
-
-  if (parser.panicMode)
-    synchronize();
-}
-
-static void expression();
-static void statement();
-static void declaration();
-static ParseRule *getRule(TokenType type);
 
 static void grouping(bool canAssign) {
   expression();
@@ -285,22 +211,41 @@ static void variable(bool canAssign) {
   namedVariable(parser.previous, canAssign);
 }
 
-static void unary(bool canAssign) {
-  TokenType operationType = parser.previous.type;
-
-  // compile the operand
-  parsePrecedence(PREC_UNARY);
-
-  // Emite te operation instrustion
-  switch (operationType) {
-  case TOKEN_BANG:
-    emitByte(OP_NOT);
+static void literal(bool canAssign) {
+  switch (parser.previous.type) {
+  case TOKEN_FALSE:
+    emitByte(OP_FALSE);
     break;
-  case TOKEN_MINUS:
-    emitByte(OP_NEGATE);
+  case TOKEN_TRUE:
+    emitByte(OP_TRUE);
+    break;
+  case TOKEN_NIL:
+    emitByte(OP_NIL);
     break;
   default:
-    return; // Unreachable;
+    return; // unreachable
+  }
+}
+
+static void parsePrecedence(Precedence precedence) {
+  advance();
+  ParseFn prefixRule = getRule(parser.previous.type)->prefix;
+  if (prefixRule == NULL) {
+    error("Expect expression.");
+    return;
+  }
+
+  bool canAssign = precedence <= PREC_ASSINMENT;
+  prefixRule(canAssign);
+
+  while (precedence <= getRule(parser.current.type)->precedence) {
+    advance();
+    ParseFn infixRule = getRule(parser.previous.type)->infix;
+    infixRule(canAssign);
+  }
+
+  if (canAssign && match(TOKEN_EQUAL)) {
+    error("Invalid assignment target!");
   }
 }
 
@@ -345,19 +290,111 @@ static void binary(bool canAssign) {
   }
 }
 
-static void literal(bool canAssign) {
-  switch (parser.previous.type) {
-  case TOKEN_FALSE:
-    emitByte(OP_FALSE);
+static void unary(bool canAssign) {
+  TokenType operationType = parser.previous.type;
+
+  // compile the operand
+  parsePrecedence(PREC_UNARY);
+
+  // Emite te operation instrustion
+  switch (operationType) {
+  case TOKEN_BANG:
+    emitByte(OP_NOT);
     break;
-  case TOKEN_TRUE:
-    emitByte(OP_TRUE);
-    break;
-  case TOKEN_NIL:
-    emitByte(OP_NIL);
+  case TOKEN_MINUS:
+    emitByte(OP_NEGATE);
     break;
   default:
-    return; // unreachable
+    return; // Unreachable;
+  }
+}
+
+static void block() {
+  while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+    declaration();
+  }
+
+  consume(TOKEN_RIGHT_BRACE, "Expect '}' after block.");
+}
+
+static void varDeclaration() {
+  uint8_t global = parserVaruable("Expected a variable name!");
+
+  if (match(TOKEN_WALRUS)) {
+    expression();
+  } else {
+    emitByte(OP_NIL);
+  }
+
+  if (match(TOKEN_EQUAL)) {
+    error("\nFor assining a variable use the operation of ':='.\nFor example "
+          "'have add := 45.2 + 2'. Happy coding!");
+  }
+
+  if (match(TOKEN_SEMICOLON)) {
+    error("\nWoops! you used a semicolon at the end of the variable "
+          "declaration!\n "
+          "You only need to use a ';' at the end of an info statement. Happy "
+          "coding!");
+  }
+
+  defineVariable(global);
+}
+
+static void expressionStatement() {
+  expression();
+  // consume(TOKEN_SEMICOLON, "Expected ';' after expression!");
+  emitByte(OP_POP);
+}
+
+static void synchronize() {
+  parser.panicMode = false;
+
+  while (parser.current.type != TOKEN_EOF) {
+    if (parser.previous.type == TOKEN_SEMICOLON)
+      return;
+    switch (parser.current.type) {
+    case TOKEN_CLASS:
+    case TOKEN_FUNC:
+    case TOKEN_VAR:
+    case TOKEN_FOR:
+    case TOKEN_IF:
+    case TOKEN_WHILE:
+    case TOKEN_INFO:
+    case TOKEN_RETURN:
+      return;
+
+    default: // Do Nothing
+        ;
+    }
+
+    advance();
+  }
+}
+
+static void declaration() {
+  if (match(TOKEN_VAR)) {
+    varDeclaration();
+  } else {
+    statement();
+  }
+
+  if (parser.panicMode)
+    synchronize();
+}
+
+static void statement() {
+  if (match(TOKEN_INFO)) {
+    expression();
+    consume(TOKEN_SEMICOLON, "Expected ';' after value! \nTry something like "
+                             "this 'info 1 + 1;' happy coding!");
+    emitByte(OP_INFO);
+  } else if (match(TOKEN_LEFT_BRACE)) {
+    beginScope();
+    block();
+    endScope();
+  } else {
+    expressionStatement();
   }
 }
 
@@ -406,28 +443,6 @@ ParseRule rules[] = {
 };
 
 static ParseRule *getRule(TokenType type) { return &rules[type]; }
-
-static void parsePrecedence(Precedence precedence) {
-  advance();
-  ParseFn prefixRule = getRule(parser.previous.type)->prefix;
-  if (prefixRule == NULL) {
-    error("Expect expression.");
-    return;
-  }
-
-  bool canAssign = precedence <= PREC_ASSINMENT;
-  prefixRule(canAssign);
-
-  while (precedence <= getRule(parser.current.type)->precedence) {
-    advance();
-    ParseFn infixRule = getRule(parser.previous.type)->infix;
-    infixRule(canAssign);
-  }
-
-  if (canAssign && match(TOKEN_EQUAL)) {
-    error("Invalid assignment target!");
-  }
-}
 
 bool compile(const char *source, Chunk *chunk) {
   initScanner(source);
