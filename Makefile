@@ -12,7 +12,7 @@ TARGET := $(BIN_PATH)/main
 RM := rm
 
 ifeq ($(OS),Windows_NT)
-	TARGET := $(BIN_PATH)\main.exe
+	TARGET := $(BIN_PATH)\azura.exe
 	RM := del /f
 endif
 
