@@ -164,6 +164,18 @@ static void varDeclaration() {
     emitByte(OP_NIL);
   }
 
+  if (match(TOKEN_EQUAL)) {
+    error("\nFor assining a variable use the operation of ':='.\nFor example "
+          "'have add := 45.2 + 2'. Happy coding!");
+  }
+
+  if (match(TOKEN_SEMICOLON)) {
+    error("\nWoops! you used a semicolon at the end of the variable "
+          "declaration!\n "
+          "You only need to use a ';' at the end of an info statement. Happy "
+          "coding!");
+  }
+
   defineVariable(global);
 }
 
@@ -201,8 +213,8 @@ static void expressionStatement() {
 static void statement() {
   if (match(TOKEN_INFO)) {
     expression();
-    consume(TOKEN_SEMICOLON,
-            "Expected ';' after value! \nTry 'info 1 + 1;' happy coding!");
+    consume(TOKEN_SEMICOLON, "Expected ';' after value! \nTry something like "
+                             "this 'info 1 + 1;' happy coding!");
     emitByte(OP_INFO);
   } else {
     expressionStatement();
