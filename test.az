@@ -1,8 +1,8 @@
 // test case 1
-have breakfast := "eggs"
-have berverage := "cafe au lait"
-breakfast = "eggs with " + berverage
-info breakfast;
+// have breakfast := "eggs"
+// have berverage := "cafe au lait"
+// breakfast = "eggs with " + berverage
+// info breakfast;
 
 // test case 2
 // have berverage := "cafe au lait"
@@ -14,3 +14,8 @@ info breakfast;
 //have berverage := "cafe au lait"
 //breakfast = "eggs with " + berverage
 //info breakfast
+
+{
+    have x := "Hello"
+    info x;
+}
