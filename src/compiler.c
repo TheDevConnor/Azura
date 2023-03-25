@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -187,9 +188,12 @@ static bool identifierEquals(Token *a, Token *b) {
 }
 
 static int resolveLocal(Compiler *compiler, Token *name) {
-  for (int i = compiler->localCount - 1; i >= 0; i++) {
+  for (int i = compiler->localCount - 1; i >= 0; i--) {
     Local *local = &compiler->locals[i];
     if (identifierEquals(name, &local->name)) {
+      if (local->depth == -1) {
+        error("Can't read variable in its own initializer!");
+      }
       return i;
     }
   }
@@ -204,7 +208,7 @@ static void addLocal(Token name) {
 
   Local *local = &current->locals[current->localCount++];
   local->name = name;
-  local->depth = current->scopeDepth;
+  local->depth = -1;
 }
 
 static void declareVariable() {
@@ -213,7 +217,7 @@ static void declareVariable() {
 
   Token *name = &parser.previous;
 
-  for (int i = current->localCount - 1; i >= 0; i++) {
+  for (int i = current->localCount - 1; i >= 0; i--) {
     Local *local = &current->locals[i];
     if (local->depth != -1 && local->depth < current->scopeDepth) {
       break;
@@ -237,8 +241,13 @@ static uint8_t parserVaruable(const char *errorMessage) {
   return identifierConstant(&parser.previous);
 }
 
+static void markInitialized() {
+  current->locals[current->localCount - 1].depth = current->scopeDepth;
+}
+
 static void defineVariable(uint8_t global) {
   if (current->scopeDepth > 0) {
+    markInitialized();
     return;
   }
 
@@ -264,9 +273,9 @@ static void namedVariable(Token name, bool canAssign) {
   uint8_t getOp, setOp;
   int arg = resolveLocal(current, &name);
 
-  if (arg != 1) {
-    getOp = OP_GET_GLOBAL;
-    setOp = OP_SET_GLOBAL;
+  if (arg != -1) {
+    getOp = OP_GET_LOCAL;
+    setOp = OP_SET_LOCAL;
   } else {
     arg = identifierConstant(&name);
     getOp = OP_GET_GLOBAL;
@@ -457,12 +466,17 @@ static void declaration() {
     synchronize();
 }
 
+static void infoStatement() {
+  expression();
+  consume(TOKEN_SEMICOLON,
+          "Expected ';' after the value in the info statement! \nTry something "
+          "like 'info 1 + 1;' happy coding!");
+  emitByte(OP_INFO);
+}
+
 static void statement() {
   if (match(TOKEN_INFO)) {
-    expression();
-    consume(TOKEN_SEMICOLON, "Expected ';' after value! \nTry something like "
-                             "this 'info 1 + 1;' happy coding!");
-    emitByte(OP_INFO);
+    infoStatement();
   } else if (match(TOKEN_LEFT_BRACE)) {
     beginScope();
     block();
