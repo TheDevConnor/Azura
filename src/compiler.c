@@ -464,8 +464,9 @@ static void varDeclaration() {
           "'have add := 45.2 + 2'. Happy coding!");
   }
 
-  consume(TOKEN_SEMICOLON, "Expected ';' after the declaration! \nTry something "
-                          "like 'have add := 45.2 + 2;' happy coding!");
+  consume(TOKEN_SEMICOLON,
+          "Expected ';' after the declaration! \nTry something "
+          "like 'have add := 45.2 + 2;' happy coding!");
 
   defineVariable(global);
 }
@@ -591,7 +592,7 @@ static void whileStatement() {
   consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the while condition!");
 
   int exitJump = emitJump(OP_JUMP_IF_FALSE);
-  emitJump(OP_POP);
+  emitByte(OP_POP);
   statement();
   emitLoop(loopstart);
 
@@ -630,14 +631,14 @@ ParseRule rules[] = {
     [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
     [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
     [TOKEN_BANG] = {unary, NULL, PREC_NONE},
-    [TOKEN_BANG_EQUALS] = {NULL, NULL, PREC_EQUALITY},
+    [TOKEN_BANG_EQUALS] = {NULL, binary, PREC_EQUALITY},
     [TOKEN_WALRUS] = {NULL, NULL, PREC_NONE},
     [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
-    [TOKEN_EQUAL_EQUAL] = {NULL, NULL, PREC_EQUALITY},
-    [TOKEN_GREATER] = {NULL, NULL, PREC_COMPARASION},
-    [TOKEN_GREATER_EQUAL] = {NULL, NULL, PREC_COMPARASION},
-    [TOKEN_LESS] = {NULL, NULL, PREC_COMPARASION},
-    [TOKEN_LESS_EQUAL] = {NULL, NULL, PREC_COMPARASION},
+    [TOKEN_EQUAL_EQUAL] = {NULL, binary, PREC_EQUALITY},
+    [TOKEN_GREATER] = {NULL, binary, PREC_COMPARASION},
+    [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARASION},
+    [TOKEN_LESS] = {NULL, binary, PREC_COMPARASION},
+    [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARASION},
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
