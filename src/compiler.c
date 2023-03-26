@@ -66,7 +66,7 @@ static void errorAt(Token *token, const char *message) {
 
   parser.panicMode = true;
 
-  fprintf(stderr, "[line %d] Error", token->line);
+  fprintf(stderr, "[line %d] Error", token->line - 1);
 
   if (token->type == TOKEN_EOF) {
     fprintf(stderr, " at end");
@@ -120,9 +120,27 @@ static void emitByte(uint8_t byte) {
   writeChunk(currentChunk(), byte, parser.previous.line);
 }
 
+static int emitJump(uint8_t instruction) {
+  emitByte(instruction);
+  emitByte(0xff);
+  emitByte(0xff);
+  return currentChunk()->count - 2;
+}
+
 static void emitBytes(uint8_t byte1, uint8_t byte2) {
   emitByte(byte1);
   emitByte(byte2);
+}
+
+static void emitLoop(int loopstart) {
+  emitByte(OP_LOOP);
+
+  int offset = currentChunk()->count - loopstart + 2;
+  if (offset > UINT16_MAX)
+    error("The loop body is to big!");
+
+  emitByte((offset >> 8) & 0xff);
+  emitByte(offset & 0xff);
 }
 
 static void emitReturn() { emitByte(OP_RETRUN); }
@@ -139,6 +157,18 @@ static uint8_t makeConstant(Value value) {
 
 static void emitConstant(Value value) {
   emitBytes(OP_CONSTANT, makeConstant(value));
+}
+
+static void patchJump(int offset) {
+  // -2 adjust for the bytecode for the jump offset
+  int jump = currentChunk()->count - offset - 2;
+
+  if (jump > UINT16_MAX) { // One of the erros i got on stream was that I did <
+    error("Too much code in the chunk!");
+  }
+
+  currentChunk()->code[offset] = (jump >> 8) & 0xff;
+  currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
 static void initCompiler(Compiler *compiler) {
@@ -254,6 +284,15 @@ static void defineVariable(uint8_t global) {
   emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
+static void and_(bool canAssign) {
+  int endjump = emitJump(OP_JUMP_IF_FALSE);
+
+  emitByte(OP_POP);
+  parsePrecedence(PREC_AND);
+
+  patchJump(endjump);
+}
+
 static void grouping(bool canAssign) {
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression!");
@@ -262,6 +301,17 @@ static void grouping(bool canAssign) {
 static void number(bool canAssign) {
   double value = strtod(parser.previous.start, NULL);
   emitConstant(NUMBER_VAL(value));
+}
+
+static void or_(bool canAssign) {
+  int elseJump = emitJump(OP_JUMP_IF_FALSE);
+  int endjump = emitJump(OP_JUMP);
+
+  patchJump(elseJump);
+  emitByte(OP_POP);
+
+  parsePrecedence(PREC_OR);
+  patchJump(endjump);
 }
 
 static void string(bool canAssign) {
@@ -414,20 +464,80 @@ static void varDeclaration() {
           "'have add := 45.2 + 2'. Happy coding!");
   }
 
-  if (match(TOKEN_SEMICOLON)) {
-    error("\nWoops! you used a semicolon at the end of the variable "
-          "declaration!\n "
-          "You only need to use a ';' at the end of an info statement. Happy "
-          "coding!");
-  }
+  consume(TOKEN_SEMICOLON, "Expected ';' after the declaration! \nTry something "
+                          "like 'have add := 45.2 + 2;' happy coding!");
 
   defineVariable(global);
 }
 
 static void expressionStatement() {
   expression();
-  // consume(TOKEN_SEMICOLON, "Expected ';' after expression!");
+  consume(TOKEN_SEMICOLON, "Expected ';' after expression!");
   emitByte(OP_POP);
+}
+
+static void forStatement() {
+  beginScope();
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'for' keyword!");
+
+  if (match(TOKEN_SEMICOLON)) {
+    // no initializer.
+  } else if (match(TOKEN_VAR)) {
+    varDeclaration();
+  } else {
+    expressionStatement();
+  }
+
+  int loopStart = currentChunk()->count;
+
+  int exitJump = -1;
+  if (!match(TOKEN_SEMICOLON)) {
+    expression();
+    consume(TOKEN_SEMICOLON, "Expected a ';' after the loop conditions");
+
+    // Jump out of the loop if condition is false!
+    exitJump = emitJump(OP_JUMP_IF_FALSE);
+    emitByte(OP_POP); // condition
+  }
+
+  if (!match(TOKEN_RIGHT_PAREN)) {
+    int bodyJump = emitJump(OP_JUMP);
+    int incrementStart = currentChunk()->count;
+    expression();
+    emitByte(OP_POP);
+    consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the clause!");
+
+    emitLoop(loopStart);
+    loopStart = incrementStart;
+    patchJump(bodyJump);
+  }
+
+  statement();
+  emitLoop(loopStart);
+  if (exitJump != -1) {
+    patchJump(exitJump);
+    emitByte(OP_POP);
+  }
+  endScope();
+}
+
+static void ifStatement() {
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'if keyword!'");
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the if conditions!");
+
+  int thenJump = emitJump(OP_JUMP_IF_FALSE);
+  emitByte(OP_POP);
+  statement();
+
+  int elseJump = emitJump(OP_JUMP);
+
+  patchJump(thenJump);
+  emitByte(OP_POP);
+  if (match(TOKEN_ELSE))
+    statement();
+
+  patchJump(elseJump);
 }
 
 static void synchronize() {
@@ -474,9 +584,30 @@ static void infoStatement() {
   emitByte(OP_INFO);
 }
 
+static void whileStatement() {
+  int loopstart = currentChunk()->count;
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'while' keyword!");
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the while condition!");
+
+  int exitJump = emitJump(OP_JUMP_IF_FALSE);
+  emitJump(OP_POP);
+  statement();
+  emitLoop(loopstart);
+
+  patchJump(exitJump);
+  emitByte(OP_POP);
+}
+
 static void statement() {
   if (match(TOKEN_INFO)) {
     infoStatement();
+  } else if (match(TOKEN_IF)) {
+    ifStatement();
+  } else if (match(TOKEN_WHILE)) {
+    whileStatement();
+  } else if (match(TOKEN_FOR)) {
+    forStatement();
   } else if (match(TOKEN_LEFT_BRACE)) {
     beginScope();
     block();
@@ -510,7 +641,7 @@ ParseRule rules[] = {
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
-    [TOKEN_AND] = {NULL, NULL, PREC_NONE},
+    [TOKEN_AND] = {NULL, and_, PREC_NONE},
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
     [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
@@ -519,7 +650,7 @@ ParseRule rules[] = {
     [TOKEN_IF] = {NULL, NULL, PREC_NONE},
     [TOKEN_INFO] = {NULL, NULL, PREC_NONE},
     [TOKEN_NIL] = {literal, NULL, PREC_NONE},
-    [TOKEN_OR] = {NULL, NULL, PREC_NONE},
+    [TOKEN_OR] = {NULL, or_, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
     [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
     [TOKEN_THIS] = {NULL, NULL, PREC_NONE},

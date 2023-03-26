@@ -1,11 +1,38 @@
-// Tetsing blocks
-
-have a := "outer"
+have x := 4;
+info x + 10;
 
 {
-  have a := "inner"
-  info a; // expected: inner
+    have x := 45;
+    x = x * 2;
+    info x; 
+    {
+      //evaluate the 'else' expression if the condition is false 
+      if (true) info "good"; else info "bad"; // expected: good
+      if (false) info "bad"; else info "good"; // expected: good
+
+      if (false) {
+          info "bad";
+      } else {
+          info "good";
+      }
+
+      have a := false;
+      if (a = true) info a; // expected: true
+    } 
+    {
+        // // Block body
+        // have c := 0;
+        // while (c < 10) {
+        //     info c;
+        //     c = c + 1;
+        // }
+
+        // // Single expression body
+        // have d := 0;
+        // while (d < 10) info d = d + 1;
+
+        // // Statement body
+        // while (false) if (true) 1; else 2;
+        // while (false) while (true) 1;
+    }
 }
-
-info a; // expected: outer
-
