@@ -126,6 +126,9 @@ static InterpretResult run() {
     case OP_POP:
       pop();
       break;
+    case OP_DUP:
+      push(peek(0));
+      break;
     case OP_LOOP: {
       uint16_t offset = READ_SHORT();
       vm.ip -= offset;

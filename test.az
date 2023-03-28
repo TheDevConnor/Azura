@@ -35,5 +35,18 @@
       //    info i;
       // }
     }
+    {
+      switch (3) {
+          case 1:
+            info "one";
+          case 2:
+            info "two";
+          case 3:
+            info "three";
+        default:
+          info "default";
+      }
+      info "after";
+    }
 }
 

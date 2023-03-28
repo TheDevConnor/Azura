@@ -66,7 +66,7 @@ static void errorAt(Token *token, const char *message) {
 
   parser.panicMode = true;
 
-  fprintf(stderr, "[line %d] Error", token->line - 1);
+  fprintf(stderr, "[line %d] Error", token->line);
 
   if (token->type == TOKEN_EOF) {
     fprintf(stderr, " at end");
@@ -600,6 +600,78 @@ static void whileStatement() {
   emitByte(OP_POP);
 }
 
+static void switchStatement() {
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the switch keyword!");
+  expression();
+  consume(TOKEN_RIGHT_PAREN,
+          "Expected a ')' after the value of the switch statement!");
+  consume(TOKEN_LEFT_BRACE, "Expected a '{' before the switch cases!");
+
+  int state =
+      0; // 0: before all of the cases, 1: before default, 2: after the default:
+  int casesEnd[MAX_CASES];
+  int caseCount = 0;
+  int previousCaseSkip = -1;
+
+  while (!match(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+    if (match(TOKEN_CASE) || match(TOKEN_DEFAULT)) {
+      TokenType caseType = parser.previous.type;
+
+      if (state == 2) {
+        error("Can not have another case or default! After the default case!");
+      }
+
+      if (state == 1) {
+        // At the end of the previous case, jump over the others.
+        casesEnd[caseCount++] = emitJump(OP_JUMP);
+
+        // Patch its condition to jump to the next case (this one).
+        patchJump(previousCaseSkip);
+        emitByte(OP_POP);
+      }
+
+      if (caseType == TOKEN_CASE) {
+        state = 1;
+
+        // See if the case is equal to the value
+        emitByte(OP_DUP);
+        expression();
+
+        consume(TOKEN_COLON, "Expected a ':' after the case values!");
+
+        emitByte(OP_EQUAL);
+        previousCaseSkip = emitJump(OP_JUMP_IF_FALSE);
+
+        // Pop the comparison result.
+        emitByte(OP_POP);
+      } else {
+        state = 2;
+        consume(TOKEN_COLON, "Expected a ':' after the default case!");
+        previousCaseSkip = -1;
+      }
+    } else {
+      // Otherwise, it is a statement inside trhe current case.
+      if (state == 0) {
+        error("Can not have statements before any cases!");
+      }
+      statement();
+    }
+  }
+
+  // If we ended without a default case, patch its jump condition
+  if (state == 1) {
+    patchJump(previousCaseSkip);
+    emitByte(OP_POP);
+  }
+
+  // Patch all the cases of jump to the end
+  for (int i = 0; i < caseCount; i++) {
+    patchJump(casesEnd[i]);
+  }
+
+  emitByte(OP_POP); // The switch value
+}
+
 static void statement() {
   if (match(TOKEN_INFO)) {
     infoStatement();
@@ -609,6 +681,8 @@ static void statement() {
     whileStatement();
   } else if (match(TOKEN_FOR)) {
     forStatement();
+  } else if (match(TOKEN_SWITCH)) {
+    switchStatement();
   } else if (match(TOKEN_LEFT_BRACE)) {
     beginScope();
     block();

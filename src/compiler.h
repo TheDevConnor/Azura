@@ -4,6 +4,7 @@
 #include "object.h"
 #include "vm.h"
 
-bool compile(const char* source, Chunk* chunk);
+#define MAX_CASES 256
+bool compile(const char *source, Chunk *chunk);
 
 #endif
