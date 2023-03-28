@@ -20,11 +20,12 @@ static Obj* allocateObject(size_t size, ObjectType type) {
 }
 
 static ObjString* allocateString(char* chars, int length, uint32_t hash) {
-  ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
+  // ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
+  ObjString* string = (ObjString*)allocateObject(sizeof(ObjString), OBJ_STRING);
   string->length = length;
   string->hash = hash;
   string->chars = chars;
-  tableSet(&vm.strings, string, NIL_VAL);
+  tableSet(&vm.strings, OBJ_VAL(string), NIL_VAL);
   return string;
 }
 

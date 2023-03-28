@@ -36,17 +36,22 @@
       // }
     }
     {
-      switch (3) {
-          case 1:
-            info "one";
-          case 2:
-            info "two";
-          case 3:
-            info "three";
+      have a := 1 + 2;
+
+      switch (a) {
+        case 10:
+          info "a is to big!";
+          break;
+        case 3:
+          info "Exactly! A is " + a;
+          break;
+        case 1:
+          info "a is to small";
+          break;
         default:
-          info "default";
+          info "I don't know such values";
       }
-      info "after";
+
     }
 }
 
