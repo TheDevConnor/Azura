@@ -1,57 +1,48 @@
-{
-    // have x := 45;
-    // x = x * 2;
-    // info x; 
-    {
-      //evaluate the 'else' expression if the condition is false 
-      // if (true) info "good"; else info "bad"; // expected: good
-      // if (false) info "bad"; else info "good"; // expected: good
-
-      // if (false) {
-      //    info "bad";
-      // } else {
-      //    info "good";
-      // }
-
-      // have a := false;
-      // if (a = true) info a; // expected: true
-    } 
-    {
-        // Block body
-        // while (true) {
-        //     info "Hello There!";
-        // }
-
-        // Single expression body
-        // have d := 0;
-        // while (d < 10) info d = d + 1;
-
-        // Statement body
-        // while (false) if (true) 1; else 2;
-        // while (false) while (true) 1;
-    }
-    {
-      // for (have i := 1; i < 3;) {
-      //    info i;
-      // }
-    }
-    {
-      have a := 1 + 2;
-
-      switch (a) {
-        case 10:
-          info "a is to big!";
-          break;
-        case 3:
-          info "Exactly! A is " + a;
-          break;
-        case 1:
-          info "a is to small";
-          break;
-        default:
-          info "I don't know such values";
-      }
-
-    }
+switch (2) {
+  case 1:
+    info "case 1";
+  case 2:
+    info "case 2";
+  case 3:
+    info "case 3";
+  default:
+    info "default";
 }
+info "end";
 
+// Output:
+//     0000    1 OP_CONSTANT         0 '2'
+//     0002    2 OP_DUP
+//     0003    | OP_CONSTANT         1 '1'
+//     0005    | OP_EQUAL
+// .-- 0006    | OP_JUMP_IF_FALSE    6 -> 16
+// |   0009    | OP_POP
+// |   0010    3 OP_CONSTANT         2 'one'
+// |   0012    | OP_PRINT
+// |   0013    4 OP_JUMP            13 -> 50 ------.
+// '-> 0016    | OP_POP                            |
+//     0017    | OP_DUP                            |
+//     0018    | OP_CONSTANT         3 '2'         |
+//     0020    | OP_EQUAL                          |
+// .-- 0021    | OP_JUMP_IF_FALSE   21 -> 31       |
+// |   0024    | OP_POP                            |
+// |   0025    5 OP_CONSTANT         4 'two'       |
+// |   0027    | OP_PRINT                          |
+// |   0028    6 OP_JUMP            28 -> 50 ------|
+// '-> 0031    | OP_POP                            |
+//     0032    | OP_DUP                            |
+//     0033    | OP_CONSTANT         5 '3'         |
+//     0035    | OP_EQUAL                          |
+// .-- 0036    | OP_JUMP_IF_FALSE   36 -> 46       |
+// |   0039    | OP_POP                            |
+// |   0040    7 OP_CONSTANT         6 'three'     |
+// |   0042    | OP_PRINT                          |
+// |   0043    8 OP_JUMP            43 -> 50 ------|
+// '-> 0046    | OP_POP                            |
+//     0047    9 OP_CONSTANT         7 'default'   |
+//     0049    | OP_PRINT                          |
+// .-----------------------------------------------'
+// '-> 0050   10 OP_POP
+//     0051   11 OP_CONSTANT         8 'after'
+//     0053    | OP_PRINT
+//     0054   13 OP_RETURN
