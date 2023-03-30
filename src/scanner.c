@@ -164,7 +164,6 @@ static TokenType identifierType() {
   case 'r':
     return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
   case 's':
-    // return checkKeyword(1, 4, "uper", TOKEN_SUPER);
     if (scanner.current - scanner.start > 1) {
       switch (scanner.start[1]) {
       case 'u':
@@ -204,7 +203,7 @@ static Token number() {
 }
 
 static Token string() {
-  while (peek() != '"' && !isAtEnd()) {
+  while ((peek() != '"') && !isAtEnd()) {
     if (peek() == '\n')
       scanner.line++;
     advance();
