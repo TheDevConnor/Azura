@@ -1,7 +1,9 @@
-func a () { b(); }
-func b () { c(); }
-func c () {
-    c("too", "many");
+info "Start";
+func a() { info b; }
+func b() { info c; }
+func c() {
+    info 1 + 2;
 }
 
-a();
+info a;
+info "end";

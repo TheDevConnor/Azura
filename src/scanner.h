@@ -3,8 +3,8 @@
 
 typedef enum {
   // Single-character tokens;
-  TOKEN_LEFT_PAREN,
-  TOKEN_RIGHT_PAREN,
+  TOKEN_LEFT_PAREN, // (
+  TOKEN_RIGHT_PAREN, // )
   TOKEN_LEFT_BRACE,
   TOKEN_RIGHT_BRACE,
   TOKEN_COMMA,

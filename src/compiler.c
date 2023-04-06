@@ -64,10 +64,46 @@ typedef struct {
 } Compiler;
 
 Parser parser;
-Compiler *current = NULL;
+Compiler* current = NULL;
 
 static Chunk* currentChunk() {
   return &current->func->chunk;
+}
+
+void errorHandling(const char* source, const char* file_name) {
+  Token token = scanToken();
+
+  initScanner(source);
+
+  if (parser.hadError == true) {
+    printf("[[%s]]->[%d]\n", file_name, token.line);
+    // [.\src\examples\test.az]->2::24
+
+    // Now we need a varuable to store the line as a string
+    char line[2000];
+
+    for (;;) {
+      token = scanToken();
+      if (token.type == TOKEN_EOF) {
+        break;
+      }
+      // we need to concat the line of the error
+      for (int i = 0; i < token.length; i++) {
+        printf("%c", token.start[i]);
+        printf(" -> %d \n", token.line);
+      }
+    }
+
+    exit(70);
+  } else {
+    printf(" -> OK\n");
+  }
+  if (parser.panicMode == true) {
+    printf(" -> Panic\n");
+    exit(70);
+  } else {
+    printf(" -> OK\n");
+  }
 }
 
 static void errorAt(Token *token, const char *message) {
@@ -289,7 +325,7 @@ static void declareVariable() {
   addLocal(*name);
 }
 
-static uint8_t parserVaruable(const char *errorMessage) {
+static uint8_t parseVariable(const char *errorMessage) {
   consume(TOKEN_IDENTIFIER, errorMessage);
 
   declareVariable();
@@ -425,7 +461,6 @@ static void parsePrecedence(Precedence precedence) {
     error("Invalid assignment target!");
   }
 }
-
 static void binary(bool canAssign) {
   TokenType operationType = parser.previous.type;
   ParseRule *rule = getRule(operationType);
@@ -505,18 +540,17 @@ static void function(FunctionType type) {
   beginScope();
 
   consume(TOKEN_LEFT_PAREN, "Expected a '(' after the function name!");
-
-  if (!check(TOKEN_RIGHT_BRACE)) {
+  if (!check(TOKEN_RIGHT_PAREN)) {
     do {
       current->func->arity++;
       if (current->func->arity > 255) {
-        errorAtCurrent("Can't have more than 255 paramenters");
+        errorAtCurrent("Can't have more than 255 parameters!");
       }
-      uint8_t constant = parserVaruable("Expected a parameters name!");
-      defineVariable(constant);
-    } while(match(TOKEN_COMMA));
-  }
 
+      uint8_t paramConstant = parseVariable("Expected a parameter name!");
+      defineVariable(paramConstant);
+    } while (match(TOKEN_COMMA));
+  }
   consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the function params!");
   consume(TOKEN_LEFT_BRACE, "Expected a '{' before teh function body!");
   block();
@@ -526,14 +560,14 @@ static void function(FunctionType type) {
 }
 
 static void funDeclaration() {
-  uint8_t global = parserVaruable("Expect function name.");
+  uint8_t global = parseVariable("Expect function name.");
   markInitialized();
   function(TYPE_FUNC);
   defineVariable(global);
 }
 
 static void varDeclaration() {
-  uint8_t global = parserVaruable("Expected a variable name!");
+  uint8_t global = parseVariable("Expected a variable name!");
 
   if (match(TOKEN_WALRUS)) {
     expression();

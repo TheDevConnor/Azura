@@ -11,8 +11,8 @@
 
 typedef struct {
   ObjFunction* function;
-  Value* slots;
   uint8_t* ip;
+  Value* slots;
 } CallFrame;
 
 typedef struct {

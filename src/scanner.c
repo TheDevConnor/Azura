@@ -54,8 +54,6 @@ static Token makeToken(TokenType type) {
   token.start = scanner.start;
   token.length = (int)(scanner.current - scanner.start);
   token.line = scanner.line;
-  token.pos = 0;
-
   return token;
 }
 
@@ -217,6 +215,7 @@ static Token string() {
 }
 
 Token scanToken() {
+  Token* token;
   skipWhiteSpace();
   scanner.start = scanner.current;
 
@@ -268,6 +267,6 @@ Token scanToken() {
   case '"':
     return string();
   }
-
-  return errorToken("unexpected character.");
+  errorToken("Unexpected character.");
+  return makeToken(TOKEN_ERROR);
 }

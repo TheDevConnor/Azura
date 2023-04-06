@@ -15,8 +15,8 @@
 #define AS_CSTRING(value)   (((ObjString*)AS_OBJ(value))->chars)
 
 typedef enum {
-    OBJ_STRING,
     OBJ_FUNCTION,
+    OBJ_STRING,
 } ObjectType;
 
 typedef struct Obj {
@@ -37,6 +37,11 @@ typedef struct ObjString {
     char* chars;
     uint32_t hash;
 } ObjString;
+
+typedef struct ObjClosure {
+    Obj obj;
+    ObjFunction* function;
+} ObjClosure;
 
 ObjFunction* newFunction();
 ObjString* takeString(char* chars, int length);

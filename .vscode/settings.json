@@ -8,7 +8,9 @@
         "*.tcc": "c",
         "typeinfo": "c",
         "new": "c",
-        "value.h": "c"
+        "value.h": "c",
+        "object.h": "c",
+        "compare": "c"
     },
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#383b3b",
