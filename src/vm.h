@@ -1,7 +1,6 @@
 #ifndef azura_vm_h
 #define azura_vm_h
 
-#include "chunk.h"
 #include "object.h"
 #include "table.h"
 #include "value.h"

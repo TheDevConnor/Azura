@@ -1,7 +1,7 @@
 CXX := g++
 CC := gcc
 
-CFLAGS := -O2 -std=c17 -Wall -Wextra
+CFLAGS := -O2 -std=c11 -Wall -Wextra
 
 BIN_PATH := bin
 OBJ_PATH := obj

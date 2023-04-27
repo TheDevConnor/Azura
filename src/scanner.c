@@ -215,7 +215,6 @@ static Token string() {
 }
 
 Token scanToken() {
-  Token* token;
   skipWhiteSpace();
   scanner.start = scanner.current;
 

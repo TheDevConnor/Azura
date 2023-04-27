@@ -27,18 +27,24 @@ static void runtimeError(const char *format, ...) {
   va_end(args);
   fputs("\n", stderr);
 
+  // Printing stack traces
   for (int i = vm.frameCount - 1; i >= 0; i--) {
     CallFrame* frame = &vm.frames[i];
     ObjFunction* function = frame->function;
+    
+    // The minus 1 is because the ip is already
+    // sitting on the next instruction to be executed
     size_t instruction = frame->ip - function->chunk.code - 1;
-    printf(stderr, "[Line: %d] in ", function->chunk.line[instruction]);
 
-    if(function->name == NULL) {
+    fprintf(stderr, "[line %d] in ", function->chunk.line[instruction]);
+    
+    if (function->name == NULL) {
       fprintf(stderr, "script\n");
     } else {
       fprintf(stderr, "%s()\n", function->name->chars);
     }
   }
+
   resetStack();
 }
 
@@ -71,7 +77,8 @@ static Value peek(int distance) { return vm.stackTop[-1 - distance]; }
 static bool call(ObjFunction* function, int argCount) {
 
   if(argCount != function->arity) {
-    runtimeError("Expected a { %d } agruments, but got { %d }", function->arity, argCount);
+    runtimeError("Expected { %d } agruments, but got { %d } arguments.", 
+                  function->arity, argCount);
     return false;
   }
 
@@ -123,11 +130,12 @@ static InterpretResult run() {
 
 #define READ_BYTE() (*frame->ip++)
 
-#define READ_SHORT()  \
+#define READ_SHORT() \
   (frame->ip += 2,   \
   (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
-#define READ_CONSTANT() (frame->function->chunk.constants.values[READ_BYTE()])
+#define READ_CONSTANT()                                                    \
+  (frame->function->chunk.constants.values[READ_BYTE()])
 
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 #define BINARY_OP(valueType, op)                                               \
@@ -151,8 +159,7 @@ static InterpretResult run() {
     }
     printf("\n");
     disassembleInstruction(&frame->function->chunk,
-                           (int)(frame->ip - frame->function->chunk.code));
-
+    (int)(frame->ip - frame->function->chunk.code));
 #endif
 
     uint8_t instruction;
@@ -207,7 +214,7 @@ static InterpretResult run() {
     }
     case OP_SET_LOCAL: {
       uint8_t slot = READ_BYTE(); 
-      vm.stack[slot] = peek(0);
+      frame->slots[slot] = peek(0);
       break;
     }
     case OP_SET_GLOBAL: {
@@ -288,11 +295,20 @@ static InterpretResult run() {
       printf("\n");
       break;
     case OP_RETRUN: {
-      // Exit interpreter
-      return INTERPRET_OK;
-    }
+      Value result = pop();
+      vm.frameCount--;
+      if (vm.frameCount == 0) {
+        pop();
+        return INTERPRET_OK;
+      }
+
+      vm.stackTop = frame->slots;
+      push(result);
+      frame = &vm.frames[vm.frameCount - 1];
+      break;
     }
   }
+}
 #undef READ_BYTE
 #undef READ_SHORT
 #undef READ_CONSTANT

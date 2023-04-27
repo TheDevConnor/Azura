@@ -53,9 +53,9 @@ typedef enum {
   TYPE_SCRIPT,
 } FunctionType;
 
-typedef struct {
+typedef struct Compiler {
   struct Compiler* enclosing;
-  ObjFunction* func;
+  ObjFunction* function;
   FunctionType type;
 
   Local locals[UINT8_COUNT];
@@ -66,9 +66,7 @@ typedef struct {
 Parser parser;
 Compiler* current = NULL;
 
-static Chunk* currentChunk() {
-  return &current->func->chunk;
-}
+static Chunk* currentChunk() { return &current->function->chunk; }
 
 void errorHandling(const char* source, const char* file_name) {
   Token token = scanToken();
@@ -80,7 +78,6 @@ void errorHandling(const char* source, const char* file_name) {
     // [.\src\examples\test.az]->2::24
 
     // Now we need a varuable to store the line as a string
-    char line[2000];
 
     for (;;) {
       token = scanToken();
@@ -93,7 +90,6 @@ void errorHandling(const char* source, const char* file_name) {
         printf(" -> %d \n", token.line);
       }
     }
-
     exit(70);
   } else {
     printf(" -> OK\n");
@@ -189,7 +185,10 @@ static void emitLoop(int loopstart) {
   emitByte(offset & 0xff);
 }
 
-static void emitReturn() { emitByte(OP_RETRUN); }
+static void emitReturn() { 
+  emitByte(OP_NIL);
+  emitByte(OP_RETRUN); 
+}
 
 static uint8_t makeConstant(Value value) {
   int constant = addConstants(currentChunk(), value);
@@ -219,15 +218,15 @@ static void patchJump(int offset) {
 
 static void initCompiler(Compiler *compiler, FunctionType type) {
   compiler->enclosing = current;
-  compiler->func = NULL;
+  compiler->function = NULL;
   compiler->type = type;
   compiler->localCount = 0;
   compiler->scopeDepth = 0;
-  compiler->func = newFunction();
+  compiler->function = newFunction();
   current = compiler;
-
   if (type != TYPE_SCRIPT) {
-    current->func->name = copyString(parser.previous.start, parser.previous.length);
+    current->function->name = copyString(parser.previous.start,
+                                         parser.previous.length);
   }
 
   Local* local = &current->locals[current->localCount++];
@@ -238,7 +237,7 @@ static void initCompiler(Compiler *compiler, FunctionType type) {
 
 static ObjFunction* endCompiler() {
   emitReturn();
-  ObjFunction* function = current->func;
+  ObjFunction* function = current->function;
 
 #ifdef DEBUG_PRINT_CODE
   if (!parser.hadError) {
@@ -539,20 +538,22 @@ static void function(FunctionType type) {
   initCompiler(&compiler, type);
   beginScope();
 
-  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the function name!");
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after function name.");
+  // Check for parameters
   if (!check(TOKEN_RIGHT_PAREN)) {
     do {
-      current->func->arity++;
-      if (current->func->arity > 255) {
-        errorAtCurrent("Can't have more than 255 parameters!");
+      current->function->arity++;
+      // Max number of parameters is 255
+      if (current->function->arity > 255) {
+        errorAtCurrent("Can't have more than 255 parameters.");
       }
-
-      uint8_t paramConstant = parseVariable("Expected a parameter name!");
+      // Parse the parameter name
+      uint8_t paramConstant = parseVariable("Expect parameter name.");
       defineVariable(paramConstant);
     } while (match(TOKEN_COMMA));
   }
-  consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the function params!");
-  consume(TOKEN_LEFT_BRACE, "Expected a '{' before teh function body!");
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
+  consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
   block();
 
   ObjFunction* function = endCompiler();
@@ -560,7 +561,7 @@ static void function(FunctionType type) {
 }
 
 static void funDeclaration() {
-  uint8_t global = parseVariable("Expect function name.");
+  uint8_t global = parseVariable("Expected a function name.");
   markInitialized();
   function(TYPE_FUNC);
   defineVariable(global);
@@ -703,6 +704,21 @@ static void infoStatement() {
   emitByte(OP_INFO);
 }
 
+static void returnStatement() {
+  if (current->type == TYPE_SCRIPT) {
+    error("Can't return from top-level code!");
+  }
+  if (match(TOKEN_SEMICOLON)) {
+    emitReturn();
+  } else {
+    expression();
+    consume(TOKEN_SEMICOLON,
+            "Expected ';' after the return value!" 
+            "\nTry this 'return 1 + 1;' Happy Coding!");
+    emitByte(OP_RETRUN);
+  }
+}
+
 static void whileStatement() {
   int loopstart = currentChunk()->count;
   consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'while' keyword!");
@@ -795,6 +811,8 @@ static void statement() {
     infoStatement();
   } else if (match(TOKEN_IF)) {
     ifStatement();
+  } else if (match(TOKEN_RETURN)) {
+    returnStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
   } else if (match(TOKEN_FOR)) {
@@ -811,7 +829,7 @@ static void statement() {
 }
 
 ParseRule rules[] = {
-    [TOKEN_LEFT_PAREN] = {grouping, call, PREC_NONE},
+    [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
     [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
     [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
@@ -856,7 +874,7 @@ ParseRule rules[] = {
 
 static ParseRule *getRule(TokenType type) { return &rules[type]; }
 
-ObjFunction* compile(const char *source) {
+ObjFunction* compile(const char* source) {
   initScanner(source);
   Compiler compiler;
   initCompiler(&compiler, TYPE_SCRIPT);

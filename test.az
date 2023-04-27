@@ -1,9 +1,5 @@
-info "Start";
-func a() { info b; }
-func b() { info c; }
-func c() {
-    info 1 + 2;
+func add(a, b) {
+    return a + b;
 }
 
-info a;
-info "end";
+info 0 + add(1, 3);
