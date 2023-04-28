@@ -66,6 +66,10 @@ void initVM() {
   resetStack();
   vm.objects = NULL;
 
+  vm.grayCount = 0;
+  vm.grayCapacity = 0;
+  vm.grayStack = NULL;
+
   initTable(&vm.globals);
   initTable(&vm.strings);
 
@@ -115,8 +119,8 @@ static bool callValue(Value callee, int argCount){
     switch (OBJ_TYPE(callee)){
       case OBJ_CLOSURE:
         return call(AS_CLOSURE(callee), argCount);
-      case OBJ_FUNCTION:
-        return call(AS_FUNCTION(callee), argCount);
+      // case OBJ_FUNCTION:
+      //   return call(AS_FUNCTION(callee), argCount);
       case OBJ_NATIVE: {
         NativeFn native = AS_NATIVE(callee);
         Value result = native(argCount, vm.stackTop - argCount);

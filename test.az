@@ -21,26 +21,3 @@ func main() {
 main();
 global_one();
 global_two();
-
-// {
-//     have global_one;
-//     have global_two;
-
-//     func main() {
-//  {// For loops are broken and not working correctly atm }
-//         for (have a := 1; a <= 2; a = a + 1) {
-//             func closure() {
-//                 info a;
-//             }
-//             if (global_one == nil) {
-//                 global_one = closure;
-//             } else {
-//                 global_two = closure;
-//             }
-//         }
-//     }
-
-//     main();
-//     global_one();
-//     global_two();
-// }

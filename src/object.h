@@ -29,10 +29,11 @@ typedef enum {
 
 typedef struct Obj {
     ObjectType type;
+    bool isMarked;
     Obj* next;
 } Obj;
 
-typedef struct ObjFunction {
+typedef struct {
     Obj obj;
     int arity; // Stores the number of parameters the function expects.
     int upvalueCount;

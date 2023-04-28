@@ -7,6 +7,7 @@
 #include "chunk.h"
 #include "common.h"
 #include "compiler.h"
+#include "memory.h"
 #include "object.h"
 #include "scanner.h"
 
@@ -73,7 +74,9 @@ typedef struct Compiler {
 Parser parser;
 Compiler* current = NULL;
 
-static Chunk* currentChunk() { return &current->function->chunk; }
+static Chunk* currentChunk() { 
+  return &current->function->chunk; 
+}
 
 void errorHandling(const char* source, const char* file_name) {
   Token token = scanToken();
@@ -184,9 +187,8 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
 static void emitLoop(int loopstart) {
   emitByte(OP_LOOP);
 
-  int offset = currentChunk()->count - loopstart + 2;
-  if (offset > UINT16_MAX)
-    error("The loop body is to big!");
+  size_t offset = currentChunk()->count - loopstart + 2;
+  if (offset > UINT16_MAX) error("The loop body is to big!");
 
   emitByte((offset >> 8) & 0xff);
   emitByte(offset & 0xff);
@@ -198,7 +200,7 @@ static void emitReturn() {
 }
 
 static uint8_t makeConstant(Value value) {
-  int constant = addConstants(currentChunk(), value);
+  size_t constant = addConstants(currentChunk(), value);
   if (constant > UINT8_MAX) {
     error("Too many constants in one chunk");
     return 0;
@@ -212,11 +214,11 @@ static void emitConstant(Value value) {
 }
 
 static void patchJump(int offset) {
-  // -2 adjust for the bytecode for the jump offset
-  int jump = currentChunk()->count - offset - 2;
+  // -2 to adjust for the bytecode for the jump offset itself.
+  size_t jump = currentChunk()->count - offset - 2;
 
-  if (jump > UINT16_MAX) { // One of the erros i got on stream was that I did <
-    error("Too much code in the chunk!");
+  if (jump > UINT16_MAX) {
+    error("Too much code to jump over.");
   }
 
   currentChunk()->code[offset] = (jump >> 8) & 0xff;
@@ -307,7 +309,7 @@ static int resolveLocal(Compiler *compiler, Token *name) {
 
 static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal) {
   int upvalueCount = compiler->function->upvalueCount;
-  for (int i = 0; i < &compiler->upvalues[i]; i++){
+  for (int i = 0; i < upvalueCount; i++){
     Upvalue* upvalue = &compiler->upvalues[i];
     if (upvalue->index == index && upvalue->isLocal == isLocal) {
       return i;
@@ -945,4 +947,12 @@ ObjFunction* compile(const char* source) {
 
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;
+}
+
+void markCompilerRoots() {
+  Compiler* compiler = current;
+  while (compiler != NULL) {
+    markObject((Obj*)compiler->function);
+    compiler = compiler->enclosing;
+  }
 }

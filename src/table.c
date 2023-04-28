@@ -123,6 +123,15 @@ ObjString* tableFindString(Table* table, const char* chars, int length, uint32_t
       return string;
     }
 
-    index = (index + 1) % table->capacity;
+    index = (index + 1) & (table->capacity - 1);
   }
 }
+
+void markTable(Table* table) {
+  for (int i = 0; i < table->capacity; i++) {
+    Entry* entry = &table->entries[i];
+    markValue(entry->key);
+    markValue(entry->value);
+  }
+}
+
