@@ -118,6 +118,8 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     return simpleInstruction("OP_INFO", offset);
   case OP_GET_GLOBAL:
     return constantInstruction("OP_GET_GLOBAL", chunk, offset);
+  case OP_CLOSE_UPVALUE:
+    return simpleInstruction("OP_CLOSE_UPVALUE", offset);
   case OP_RETRUN:
     return simpleInstruction("OP_RETURN", offset);
   default:

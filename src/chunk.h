@@ -20,6 +20,7 @@ typedef enum {
   OP_NOT,
   OP_NEGATE,
   OP_CLOSURE,
+  OP_CLOSE_UPVALUE,
   OP_INFO,
   OP_LOOP,
   OP_CALL,
