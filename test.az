@@ -1,9 +1,8 @@
-have start := clock();
-
-func add(a, b) {
-    return a + b;
+func outer() {
+    have x := "outside";
+    func inner() {
+        info x;
+    }
+    inner();
 }
-
-info add(1, 4);
-
-info clock() - start;
+outer();
