@@ -55,12 +55,14 @@ ObjNative* newNative(NativeFn function) {
 }
 
 static ObjString* allocateString(char* chars, int length, uint32_t hash) {
-  // ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
   ObjString* string = (ObjString*)allocateObject(sizeof(ObjString), OBJ_STRING);
   string->length = length;
   string->hash = hash;
   string->chars = chars;
+
+  push(OBJ_VAL(string)); // GC
   tableSet(&vm.strings, string, NIL_VAL);
+  pop(); // GC
   return string;
 }
 
