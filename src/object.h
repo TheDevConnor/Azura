@@ -43,17 +43,17 @@ typedef struct {
 
 typedef Value (*NativeFn)(int argCount, Value* args);
 
-typedef struct ObjNative {
+typedef struct {
     Obj obj;
     NativeFn function;
 } ObjNative;
 
-typedef struct ObjString {
+struct ObjString {
     Obj obj;
     int length;
     char* chars;
     uint32_t hash;
-} ObjString;
+};
 
 typedef struct ObjUpvalue {
     Obj obj;

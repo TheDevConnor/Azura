@@ -2,14 +2,14 @@ have global_one;
 have global_two;
 
 func main() {
-    { // This is a new scope 1
+    { // # This is a new scope 1
         have a := "one";
         func one() {
             info a;
         }
         global_one = one;
     }
-    { // This is a new scope 2
+    { // # This is a new scope 2
         have a := "two";
         func two() {
             info a;

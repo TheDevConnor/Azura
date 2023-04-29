@@ -57,7 +57,7 @@ static void runtimeError(const char *format, ...) {
 static void defineNative(const char* name, NativeFn function) {
   push(OBJ_VAL(copyString(name, (int)strlen(name))));
   push(OBJ_VAL(newNative(function)));
-  tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
+  tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
   pop();
   pop();
 }
@@ -282,8 +282,8 @@ static InterpretResult run() {
     }
     case OP_SET_GLOBAL: {
       ObjString *name = READ_STRING();
-      if (tableSet(&vm.globals, OBJ_VAL(name), peek(0))) {
-        tableDelete(&vm.globals, OBJ_VAL(name));
+      if (tableSet(&vm.globals, name, peek(0))) {
+        tableDelete(&vm.globals, name);
         runtimeError("Variable '%s' is undefined! \nTry doing something like "
                      "'have [your variable name] := 0'. Happy coding!",
                      name->chars);
@@ -294,7 +294,7 @@ static InterpretResult run() {
     case OP_GET_GLOBAL: {
       ObjString *name = READ_STRING();
       Value value;
-      if (!tableGet(&vm.globals, OBJ_VAL(name), &value)) {
+      if (!tableGet(&vm.globals, name, &value)) {
         runtimeError("Undefined variable '%s'.", name->chars);
         return INTERPRET_RUNTIME_ERROR;
       }
@@ -304,7 +304,7 @@ static InterpretResult run() {
     }
     case OP_DEFINE_GLOBAL: {
       ObjString *name = READ_STRING();
-      tableSet(&vm.globals, OBJ_VAL(name), peek(0));
+      tableSet(&vm.globals, name, peek(0));
       pop();
       break;
     }
