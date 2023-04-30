@@ -390,9 +390,12 @@ static InterpretResult run() {
 
       break;
     }
-    case  OP_CLOSE_UPVALUE:
+    case OP_CLOSE_UPVALUE:
       closedUpvalues(vm.stackTop - 1);
       pop();
+      break;
+    case OP_CLASS:
+      push(OBJ_VAL(newClass(READ_STRING())));
       break;
     case OP_RETRUN: {
       Value result = pop();

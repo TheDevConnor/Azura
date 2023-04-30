@@ -1,0 +1,102 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Azura Lang",
+	"patterns": [
+		{ "include": "#comments" },
+		{ "include": "#operations" },
+		{ "include": "#strings" },
+		{ "include": "#numbers" },
+		{ "include": "#reserved-words" },
+		{ "include": "#builtin-types" },
+		{ "include": "#ctr-statements" }
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.az",
+					"match": "//.*$"
+				}
+			]
+		},
+		"operations": {
+			"patterns": [
+				{
+					"name": "keyword.operator.az",
+					"match": "\\b(and|or|not|!)\\b"
+				},
+				{
+					"name": "keyword.operator.assignment.az",
+					"match": "(?<!\\w):=",
+					"captures": {
+						"0": {
+							"name": "punctuation.definition.reassignment.az"
+						}
+					}
+				},
+				{
+					"name": "keyword.operator.assignment.az",
+					"match": "=",
+					"captures": {
+						"0": {
+							"name": "punctuation.definition.assignment.az"
+						}
+					}
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.az",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.az",
+					"match": "\\\\."
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"name": "constant.numeric.az",
+					"match": "\\b(\\d+(\\.\\d+)?)\\b"
+				}
+			]
+		},
+		"ctr-statements": {
+			"patterns": [
+				{
+					"match": "\\b(if|else|while|for|switch)\\b",
+					"name": "keyword.operator.az"
+				}
+			]
+		},
+		"reserved-words": {
+			"patterns": [
+				{
+					"name": "entity.name.function.member.az",
+					"match": "\\b(true|false|nil|return|break)\\b"
+				},
+				{
+					"name": "storage.type.declaration-ident.az",
+					"match": "\\b(have|func|case|class)\\b"
+				}
+			]
+		},
+		"builtin-types": {
+			"patterns": [
+				{
+					"name": "storage.type.builtin-types.az",
+					"match": "\\b(clock)\\b"
+				}
+			]
+		}
+	},
+	"colors": {
+		"storage.type.declaration-ident.az": "#0072C6",
+		"keyword.operator.assignment.az": "#FF0000",
+		"storage.type.builtin-types.az": "#8c1aff"
+	},
+	"scopeName": "source.az"
+}

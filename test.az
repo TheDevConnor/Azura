@@ -1,24 +1,11 @@
-// have global_one;
-// have global_two;
+{
+    // fib sequnece
+    func fib(n) {
+        if (n == 0 || n == 1) {
+            return n;
+        }
+        return fib(n - 1) + fib(n - 2);
+    }
 
-// func main() {
-//     { // # This is a new scope 1
-//         have a := "one";
-//         func one() {
-//             info a;
-//         }
-//         global_one = one;
-//     }
-//     { // # This is a new scope 2
-//         have a := "two";
-//         func two() {
-//             info a;
-//         }
-//         global_two = two;
-//     }
-// }
-
-// main();
-// global_one();
-// global_two();
-info "Done";
+    info fib(10);
+}

@@ -19,6 +19,7 @@ typedef enum {
   OP_DIVIDE,
   OP_NOT,
   OP_NEGATE,
+  OP_CLASS,
   OP_CLOSURE,
   OP_CLOSE_UPVALUE,
   OP_INFO,
