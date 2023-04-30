@@ -1,11 +1,17 @@
-{
-    // fib sequnece
-    func fib(n) {
-        if (n == 0 || n == 1) {
-            return n;
+// Here is the classic message-based patteren:
+func vector(x, y) {
+    func object(message) {
+        func add(other) {
+            return vector(x + other("x"), y + other("y"));
         }
-        return fib(n - 1) + fib(n - 2);
+
+        if (message == "x") return x;
+        if (message == "y") return y;
+        if (message == "add") return add;
+        info "Unknown message!";
     }
 
-    info fib(10);
+    return object;
 }
+
+info vector(1, 2); // 1

@@ -74,6 +74,9 @@ typedef struct Compiler {
 Parser parser;
 Compiler* current = NULL;
 
+innermostLoopStart = -1;
+innermostLoopScopeDepth = 0;
+
 static Chunk* currentChunk() { 
   return &current->function->chunk; 
 }
@@ -665,17 +668,20 @@ static void expressionStatement() {
 
 static void forStatement() {
   beginScope();
-  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'for' keyword!");
 
-  if (match(TOKEN_SEMICOLON)) {
-    // no initializer.
-  } else if (match(TOKEN_VAR)) {
+  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'for' keyword!");
+  if (match(TOKEN_VAR)) {
     varDeclaration();
+  } else if (match(TOKEN_SEMICOLON)) {
+    // No initializer
   } else {
     expressionStatement();
   }
 
-  int loopStart = currentChunk()->count;
+  int surroundingLoopStart = innermostLoopStart;
+  int surroundingLoopScopeDepth = innermostLoopScopeDepth;
+  innermostLoopStart = currentChunk()->count;
+  innermostLoopScopeDepth = current->scopeDepth;
 
   int exitJump = -1;
   if (!match(TOKEN_SEMICOLON)) {
@@ -694,17 +700,21 @@ static void forStatement() {
     emitByte(OP_POP);
     consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the clause!");
 
-    emitLoop(loopStart);
-    loopStart = incrementStart;
+    emitLoop(innermostLoopStart);
+    innermostLoopStart = incrementStart;
     patchJump(bodyJump);
   }
 
   statement();
-  emitLoop(loopStart);
+  emitLoop(innermostLoopStart);
   if (exitJump != -1) {
     patchJump(exitJump);
     emitByte(OP_POP);
   }
+
+  innermostLoopStart = surroundingLoopStart;
+  innermostLoopScopeDepth = surroundingLoopScopeDepth;
+
   endScope();
 }
 
@@ -788,6 +798,21 @@ static void returnStatement() {
             "\nTry this 'return 1 + 1;' Happy Coding!");
     emitByte(OP_RETRUN);
   }
+}
+
+static void continueStatement() {
+  if (innermostLoopStart == -1) {
+    error("Can not use 'continue' outside of a loop!");
+  }
+  consume(TOKEN_SEMICOLON, "Expected ';' after the 'continue' keyword!");
+
+  // Discard any locals created inside the loop
+  for (int i = current->localCount - 1;
+       i >= 0 && current->locals[i].depth > innermostLoopScopeDepth; i--) {
+    emitByte(OP_POP);
+  }
+
+  emitLoop(innermostLoopStart);
 }
 
 static void whileStatement() {
@@ -884,6 +909,8 @@ static void statement() {
     ifStatement();
   } else if (match(TOKEN_RETURN)) {
     returnStatement();
+  } else if (match(TOKEN_CONTINUE)) {
+    continueStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
   } else if (match(TOKEN_FOR)) {
