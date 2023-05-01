@@ -1,0 +1,25 @@
+info true == true;    // expect: true
+info true == false;   // expect: false
+info false == true;   // expect: false
+info false == false;  // expect: true
+
+// Not equal to other types.
+info true == 1;        // expect: false
+info false == 0;       // expect: false
+info true == "true";   // expect: false
+info false == "false"; // expect: false
+info false == "";      // expect: false
+
+info true != true;    // expect: false
+info true != false;   // expect: true
+info false != true;   // expect: true
+info false != false;  // expect: false
+
+// Not equal to other types.
+info true != 1;        // expect: true
+info false != 0;       // expect: true
+info true != "true";   // expect: true
+info false != "false"; // expect: true
+info false != "";      // expect: true
+
+// TODO:: fix !=

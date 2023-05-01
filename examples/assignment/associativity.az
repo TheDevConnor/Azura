@@ -1,0 +1,9 @@
+have a := "a";
+have b := "b";
+have c := "c";
+
+// Assignment is right-associative
+a = b = c;
+info a; // expect: c
+info b; // expect: c
+info c; // expect: c

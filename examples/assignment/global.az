@@ -1,0 +1,8 @@
+have a := "before";
+info a; // expect: before
+
+a = "after";
+info a; // expect: after
+
+info a = "arg"; // expect: arg
+info a; // expect: arg

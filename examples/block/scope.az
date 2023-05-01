@@ -1,0 +1,8 @@
+have a := "outer";
+
+{
+    have a := "inner";
+    info a; // expect: inner
+}
+
+info a; // expect: outer

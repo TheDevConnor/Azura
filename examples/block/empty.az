@@ -1,0 +1,7 @@
+{} // by itslef
+
+// In a statement
+if (true) {}
+if (false) {} else {}
+
+info "ok"; // expect: ok
