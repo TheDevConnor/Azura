@@ -1,5 +1,5 @@
-func Add(a, b){
-    return a + b;
+if (5 < 1) {
+    info true;
+} else {
+    info false;
 }
-
-info Add(1, 3);
