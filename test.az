@@ -1,5 +1,10 @@
-if (5 < 1) {
-    info true;
-} else {
-    info false;
+have x := "global";
+func outer() {
+    have x := "outer";
+    func inner() {
+        info x;
+    }
+    inner();
 }
+outer();
+// expected: outer

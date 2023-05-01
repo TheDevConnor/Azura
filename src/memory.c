@@ -5,6 +5,10 @@
 #include "vm.h"
 
 void* reallocate(void* pointer, size_t oldeSize, size_t newSize) {
+    if (newSize > oldeSize) {
+        // Do nothing
+    }
+    
     if (newSize == 0) {
         free(pointer);
         return NULL;
