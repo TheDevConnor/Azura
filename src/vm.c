@@ -57,7 +57,7 @@ static void runtimeError(const char *format, ...) {
 static void defineNative(const char* name, NativeFn function) {
   push(OBJ_VAL(copyString(name, (int)strlen(name))));
   push(OBJ_VAL(newNative(function)));
-  tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+  tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
   pop();
   pop();
 }
@@ -65,13 +65,6 @@ static void defineNative(const char* name, NativeFn function) {
 void initVM() {
   resetStack();
   vm.objects = NULL;
-
-  vm.bytesAllocated = 0;
-  vm.nextGC = 1024 * 1024;
-
-  vm.grayCount = 0;
-  vm.grayCapacity = 0;
-  vm.grayStack = NULL;
 
   initTable(&vm.globals);
   initTable(&vm.strings);
@@ -122,8 +115,8 @@ static bool callValue(Value callee, int argCount){
     switch (OBJ_TYPE(callee)){
       case OBJ_CLOSURE:
         return call(AS_CLOSURE(callee), argCount);
-      // case OBJ_FUNCTION:
-      //   return call(AS_FUNCTION(callee), argCount);
+      case OBJ_FUNCTION:
+        return call(AS_FUNCTION(callee), argCount);
       case OBJ_NATIVE: {
         NativeFn native = AS_NATIVE(callee);
         Value result = native(argCount, vm.stackTop - argCount);
@@ -178,8 +171,8 @@ static bool isFasly(Value value) {
 }
 
 static void concatenate() {
-  ObjString *b = AS_STRING(peek(0));
-  ObjString *a = AS_STRING(peek(1));
+  ObjString *b = AS_STRING(pop());
+  ObjString *a = AS_STRING(pop());
 
   int length = a->length + b->length;
   char *chars = ALLOCATE(char, length + 1);
@@ -188,19 +181,17 @@ static void concatenate() {
   chars[length] = '\0';
 
   ObjString *result = takeString(chars, length);
-  pop();
-  pop();
   push(OBJ_VAL(result));
 }
 
 static InterpretResult run() {
   CallFrame* frame = &vm.frames[vm.frameCount - 1];
-  register uint8_t* ip = frame->ip;
 
 #define READ_BYTE() (*frame->ip++)
 
 #define READ_SHORT() \
-  (ip += 2, (uint16_t)((ip[-2] << 8) | ip[-1]))
+  (frame->ip += 2,   \
+  (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 
 #define READ_CONSTANT()                                                    \
   (frame->closure->function->chunk.constants.values[READ_BYTE()])
@@ -209,7 +200,6 @@ static InterpretResult run() {
 #define BINARY_OP(valueType, op)                                               \
   do {                                                                         \
     if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {                          \
-      frame->ip = ip;                                                          \
       runtimeError("Operands must be a number");                               \
       return INTERPRET_RUNTIME_ERROR;                                          \
     }                                                                          \
@@ -255,27 +245,25 @@ static InterpretResult run() {
       break;
     case OP_CALL: {
       int argCount = READ_BYTE();
-      frame->ip = ip;
       if (!callValue(peek(argCount), argCount)) {
         return INTERPRET_RUNTIME_ERROR;
       }
       frame = &vm.frames[vm.frameCount - 1];
-      ip = frame->ip;
-      break;
-    }
-    case OP_JUMP: {
-      uint16_t offset = READ_SHORT();
-      ip += offset;
-      break;
-    }
-    case OP_JUMP_IF_FALSE: {
-      uint16_t offset = READ_SHORT();
-      if (isFasly(peek(0))) ip += offset;
       break;
     }
     case OP_LOOP: {
       uint16_t offset = READ_SHORT();
-      ip -= offset;
+      frame->ip -= offset;
+      break;
+    }
+    case OP_JUMP_IF_FALSE: {
+      uint16_t offset = READ_SHORT();
+      if (isFasly(peek(0))) frame->ip += offset;
+      break;
+    }
+    case OP_JUMP: {
+      uint16_t offset = READ_SHORT();
+      frame->ip += offset;
       break;
     }
     case OP_GET_LOCAL: {
@@ -290,9 +278,8 @@ static InterpretResult run() {
     }
     case OP_SET_GLOBAL: {
       ObjString *name = READ_STRING();
-      if (tableSet(&vm.globals, name, peek(0))) {
-        tableDelete(&vm.globals, name);
-        frame->ip = ip;
+      if (tableSet(&vm.globals, OBJ_VAL(name), peek(0))) {
+        tableDelete(&vm.globals, OBJ_VAL(name));
         runtimeError("Variable '%s' is undefined! \nTry doing something like "
                      "'have [your variable name] := 0'. Happy coding!",
                      name->chars);
@@ -303,8 +290,7 @@ static InterpretResult run() {
     case OP_GET_GLOBAL: {
       ObjString *name = READ_STRING();
       Value value;
-      if (!tableGet(&vm.globals, name, &value)) {
-        frame->ip = ip;
+      if (!tableGet(&vm.globals, OBJ_VAL(name), &value)) {
         runtimeError("Undefined variable '%s'.", name->chars);
         return INTERPRET_RUNTIME_ERROR;
       }
@@ -314,7 +300,7 @@ static InterpretResult run() {
     }
     case OP_DEFINE_GLOBAL: {
       ObjString *name = READ_STRING();
-      tableSet(&vm.globals, name, peek(0));
+      tableSet(&vm.globals, OBJ_VAL(name), peek(0));
       pop();
       break;
     }
@@ -348,7 +334,6 @@ static InterpretResult run() {
         double a = AS_NUMBER(pop());
         push(NUMBER_VAL(a + b));
       } else {
-        frame->ip = ip;
         runtimeError("Operations must be two numbers or two string. \nFor "
                      "example: 1 + 1 or \"Hello\" + \"World\". Happy coding!");
         return INTERPRET_RUNTIME_ERROR;
@@ -369,7 +354,6 @@ static InterpretResult run() {
       break;
     case OP_NEGATE:
       if (!IS_NUMBER(peek(0))) {
-        frame->ip = ip;
         runtimeError("Operand must be a number");
         return INTERPRET_RUNTIME_ERROR;
       }
@@ -397,12 +381,9 @@ static InterpretResult run() {
 
       break;
     }
-    case OP_CLOSE_UPVALUE:
+    case  OP_CLOSE_UPVALUE:
       closedUpvalues(vm.stackTop - 1);
       pop();
-      break;
-    case OP_CLASS:
-      push(OBJ_VAL(newClass(READ_STRING())));
       break;
     case OP_RETRUN: {
       Value result = pop();
@@ -416,7 +397,6 @@ static InterpretResult run() {
       vm.stackTop = frame->slots;
       push(result);
       frame = &vm.frames[vm.frameCount - 1];
-      ip = frame->ip;
       break;
     }
   }

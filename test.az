@@ -1,17 +1,5 @@
-// Here is the classic message-based patteren:
-func vector(x, y) {
-    func object(message) {
-        func add(other) {
-            return vector(x + other("x"), y + other("y"));
-        }
-
-        if (message == "x") return x;
-        if (message == "y") return y;
-        if (message == "add") return add;
-        info "Unknown message!";
-    }
-
-    return object;
+func Add(a, b){
+    return a + b;
 }
 
-info vector(1, 2); // 1
+info Add(1, 3);

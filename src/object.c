@@ -13,22 +13,10 @@
 static Obj* allocateObject(size_t size, ObjectType type) {
   Obj* object = (Obj*)reallocate(NULL, 0, size);
   object->type = type;
-  object->isMarked = false;
 
   object->next = vm.objects;
   vm.objects = object;
-
-#ifdef DEBUG_LOG_GC
-  printf("%p allocate %ld for %d\n", (void*)object, size, type);
-#endif
-
   return object;
-}
-
-ObjClass* newClass(ObjString* name) {
-  ObjClass* klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
-  klass->name = name;
-  return klass;
 }
 
 ObjClosure* newClosure(ObjFunction* function) {
@@ -61,14 +49,12 @@ ObjNative* newNative(NativeFn function) {
 }
 
 static ObjString* allocateString(char* chars, int length, uint32_t hash) {
+  // ObjString* string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
   ObjString* string = (ObjString*)allocateObject(sizeof(ObjString), OBJ_STRING);
   string->length = length;
   string->hash = hash;
   string->chars = chars;
-
-  push(OBJ_VAL(string)); // GC
-  tableSet(&vm.strings, string, NIL_VAL);
-  pop(); // GC
+  tableSet(&vm.strings, OBJ_VAL(string), NIL_VAL);
   return string;
 }
 
@@ -122,9 +108,6 @@ static void printFunction(ObjFunction* function) {
 
 void printObject(Value value) {
   switch(OBJ_TYPE(value)) {
-    case OBJ_CLASS:
-      printf("%s", AS_CLASS(value)->name->chars);
-      break;
     case OBJ_CLOSURE:
       printFunction(AS_CLOSURE(value)->function);
       break;

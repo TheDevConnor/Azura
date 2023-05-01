@@ -7,7 +7,6 @@
 #include "chunk.h"
 #include "common.h"
 #include "compiler.h"
-#include "memory.h"
 #include "object.h"
 #include "scanner.h"
 
@@ -74,12 +73,7 @@ typedef struct Compiler {
 Parser parser;
 Compiler* current = NULL;
 
-innermostLoopStart = -1;
-innermostLoopScopeDepth = 0;
-
-static Chunk* currentChunk() { 
-  return &current->function->chunk; 
-}
+static Chunk* currentChunk() { return &current->function->chunk; }
 
 void errorHandling(const char* source, const char* file_name) {
   Token token = scanToken();
@@ -190,8 +184,9 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
 static void emitLoop(int loopstart) {
   emitByte(OP_LOOP);
 
-  size_t offset = currentChunk()->count - loopstart + 2;
-  if (offset > UINT16_MAX) error("The loop body is to big!");
+  int offset = currentChunk()->count - loopstart + 2;
+  if (offset > UINT16_MAX)
+    error("The loop body is to big!");
 
   emitByte((offset >> 8) & 0xff);
   emitByte(offset & 0xff);
@@ -203,7 +198,7 @@ static void emitReturn() {
 }
 
 static uint8_t makeConstant(Value value) {
-  size_t constant = addConstants(currentChunk(), value);
+  int constant = addConstants(currentChunk(), value);
   if (constant > UINT8_MAX) {
     error("Too many constants in one chunk");
     return 0;
@@ -217,11 +212,11 @@ static void emitConstant(Value value) {
 }
 
 static void patchJump(int offset) {
-  // -2 to adjust for the bytecode for the jump offset itself.
-  size_t jump = currentChunk()->count - offset - 2;
+  // -2 adjust for the bytecode for the jump offset
+  int jump = currentChunk()->count - offset - 2;
 
-  if (jump > UINT16_MAX) {
-    error("Too much code to jump over.");
+  if (jump > UINT16_MAX) { // One of the erros i got on stream was that I did <
+    error("Too much code in the chunk!");
   }
 
   currentChunk()->code[offset] = (jump >> 8) & 0xff;
@@ -312,7 +307,7 @@ static int resolveLocal(Compiler *compiler, Token *name) {
 
 static int addUpvalue(Compiler* compiler, uint8_t index, bool isLocal) {
   int upvalueCount = compiler->function->upvalueCount;
-  for (int i = 0; i < upvalueCount; i++){
+  for (int i = 0; i < &compiler->upvalues[i]; i++){
     Upvalue* upvalue = &compiler->upvalues[i];
     if (upvalue->index == index && upvalue->isLocal == isLocal) {
       return i;
@@ -620,18 +615,6 @@ static void function(FunctionType type) {
   }
 }
 
-static void classDeclaration() {
-  consume(TOKEN_IDENTIFIER, "Expected a class name!");
-  uint8_t nameConstant = identifierConstant(&parser.previous);
-  declareVariable();
-
-  emitBytes(OP_CLASS, nameConstant);
-  defineVariable(nameConstant);
-
-  consume(TOKEN_LEFT_BRACE, "Expected a '{' before the class body!");
-  consume(TOKEN_RIGHT_BRACE, "Expected a '}' after the class body!");
-}
-
 static void funDeclaration() {
   uint8_t global = parseVariable("Expected a function name.");
   markInitialized();
@@ -668,20 +651,17 @@ static void expressionStatement() {
 
 static void forStatement() {
   beginScope();
-
   consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'for' keyword!");
-  if (match(TOKEN_VAR)) {
+
+  if (match(TOKEN_SEMICOLON)) {
+    // no initializer.
+  } else if (match(TOKEN_VAR)) {
     varDeclaration();
-  } else if (match(TOKEN_SEMICOLON)) {
-    // No initializer
   } else {
     expressionStatement();
   }
 
-  int surroundingLoopStart = innermostLoopStart;
-  int surroundingLoopScopeDepth = innermostLoopScopeDepth;
-  innermostLoopStart = currentChunk()->count;
-  innermostLoopScopeDepth = current->scopeDepth;
+  int loopStart = currentChunk()->count;
 
   int exitJump = -1;
   if (!match(TOKEN_SEMICOLON)) {
@@ -700,21 +680,17 @@ static void forStatement() {
     emitByte(OP_POP);
     consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the clause!");
 
-    emitLoop(innermostLoopStart);
-    innermostLoopStart = incrementStart;
+    emitLoop(loopStart);
+    loopStart = incrementStart;
     patchJump(bodyJump);
   }
 
   statement();
-  emitLoop(innermostLoopStart);
+  emitLoop(loopStart);
   if (exitJump != -1) {
     patchJump(exitJump);
     emitByte(OP_POP);
   }
-
-  innermostLoopStart = surroundingLoopStart;
-  innermostLoopScopeDepth = surroundingLoopScopeDepth;
-
   endScope();
 }
 
@@ -763,9 +739,7 @@ static void synchronize() {
 }
 
 static void declaration() {
-  if (match(TOKEN_CLASS)) {
-    classDeclaration();
-  } else if (match(TOKEN_FUNC)) {
+  if (match(TOKEN_FUNC)) {
     funDeclaration();
   } else if(match(TOKEN_VAR)) {
     varDeclaration();
@@ -798,21 +772,6 @@ static void returnStatement() {
             "\nTry this 'return 1 + 1;' Happy Coding!");
     emitByte(OP_RETRUN);
   }
-}
-
-static void continueStatement() {
-  if (innermostLoopStart == -1) {
-    error("Can not use 'continue' outside of a loop!");
-  }
-  consume(TOKEN_SEMICOLON, "Expected ';' after the 'continue' keyword!");
-
-  // Discard any locals created inside the loop
-  for (int i = current->localCount - 1;
-       i >= 0 && current->locals[i].depth > innermostLoopScopeDepth; i--) {
-    emitByte(OP_POP);
-  }
-
-  emitLoop(innermostLoopStart);
 }
 
 static void whileStatement() {
@@ -909,8 +868,6 @@ static void statement() {
     ifStatement();
   } else if (match(TOKEN_RETURN)) {
     returnStatement();
-  } else if (match(TOKEN_CONTINUE)) {
-    continueStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
   } else if (match(TOKEN_FOR)) {
@@ -988,12 +945,4 @@ ObjFunction* compile(const char* source) {
 
   ObjFunction* function = endCompiler();
   return parser.hadError ? NULL : function;
-}
-
-void markCompilerRoots() {
-  Compiler* compiler = current;
-  while (compiler != NULL) {
-    markObject((Obj*)compiler->function);
-    compiler = compiler->enclosing;
-  }
 }
