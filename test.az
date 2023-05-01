@@ -1,3 +1,4 @@
+have start := clock();
 have x := "global";
 func outer() {
     have x := "outer";
@@ -7,4 +8,5 @@ func outer() {
     inner();
 }
 outer();
+info clock() - start;
 // expected: outer
