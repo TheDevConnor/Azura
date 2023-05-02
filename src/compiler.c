@@ -184,9 +184,8 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
 static void emitLoop(int loopstart) {
   emitByte(OP_LOOP);
 
-  int offset = currentChunk()->count - loopstart + 2;
-  if (offset > UINT16_MAX)
-    error("The loop body is to big!");
+  size_t offset = currentChunk()->count - loopstart + 2;
+  if (offset > UINT16_MAX) error("The loop body is to big!");
 
   emitByte((offset >> 8) & 0xff);
   emitByte(offset & 0xff);
@@ -198,7 +197,7 @@ static void emitReturn() {
 }
 
 static uint8_t makeConstant(Value value) {
-  int constant = addConstants(currentChunk(), value);
+  size_t constant = addConstants(currentChunk(), value);
   if (constant > UINT8_MAX) {
     error("Too many constants in one chunk");
     return 0;
@@ -213,7 +212,7 @@ static void emitConstant(Value value) {
 
 static void patchJump(int offset) {
   // -2 adjust for the bytecode for the jump offset
-  int jump = currentChunk()->count - offset - 2;
+  size_t jump = currentChunk()->count - offset - 2;
 
   if (jump > UINT16_MAX) { // One of the erros i got on stream was that I did <
     error("Too much code in the chunk!");
