@@ -1,12 +1,2 @@
-have start := clock();
-have x := "global";
-func outer() {
-    have x := "outer";
-    func inner() {
-        info x;
-    }
-    inner();
-}
-outer();
-info clock() - start;
-// expected: outer
+class Foo {}
+info Foo;
