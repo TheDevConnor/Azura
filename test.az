@@ -1,2 +1,3 @@
 class Foo {}
-info Foo;
+
+info Foo();
