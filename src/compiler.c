@@ -80,32 +80,19 @@ void errorHandling(const char* source, const char* file_name) {
 
   initScanner(source);
 
-  if (parser.hadError == true) {
-    printf("[[%s]]->[%d]\n", file_name, token.line);
-    // [.\src\examples\test.az]->2::24
+  // [.\src\examples\test.az]->2
+  printf("[[%s]]->[line::%d]\n\n", file_name, token.line);
 
-    // Now we need a varuable to store the line as a string
-
-    for (;;) {
-      token = scanToken();
-      if (token.type == TOKEN_EOF) {
-        break;
-      }
-      // we need to concat the line of the error
-      for (int i = 0; i < token.length; i++) {
-        printf("%c", token.start[i]);
-        printf(" -> %d \n", token.line);
-      }
+  // This splits the source code into indevidual characters
+  for (;;) {
+    token = scanToken();
+    // we need to concat the line of the error
+    for (int i = 0; i < token.length; i++) {
+      printf("%c \n", token.start[i]);
     }
-    exit(70);
-  } else {
-    printf(" -> OK\n");
-  }
-  if (parser.panicMode == true) {
-    printf(" -> Panic\n");
-    exit(70);
-  } else {
-    printf(" -> OK\n");
+    if (token.type == TOKEN_EOF) {
+        break;
+    }
   }
 }
 
