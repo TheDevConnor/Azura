@@ -57,7 +57,7 @@ static void runtimeError(const char *format, ...) {
 static void defineNative(const char* name, NativeFn function) {
   push(OBJ_VAL(copyString(name, (int)strlen(name))));
   push(OBJ_VAL(newNative(function)));
-  tableSet(&vm.globals, vm.stack[0], vm.stack[1]);
+  tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
   pop();
   pop();
 }
@@ -283,8 +283,8 @@ static InterpretResult run() {
     }
     case OP_SET_GLOBAL: {
       ObjString *name = READ_STRING();
-      if (tableSet(&vm.globals, OBJ_VAL(name), peek(0))) {
-        tableDelete(&vm.globals, OBJ_VAL(name));
+      if (tableSet(&vm.globals, name, peek(0))) {
+        tableDelete(&vm.globals, name);
         runtimeError("Variable '%s' is undefined! \nTry doing something like "
                      "'have [your variable name] := 0'. Happy coding!",
                      name->chars);
@@ -295,7 +295,7 @@ static InterpretResult run() {
     case OP_GET_GLOBAL: {
       ObjString *name = READ_STRING();
       Value value;
-      if (!tableGet(&vm.globals, OBJ_VAL(name), &value)) {
+      if (!tableGet(&vm.globals, name, &value)) {
         runtimeError("Undefined variable '%s'.", name->chars);
         return INTERPRET_RUNTIME_ERROR;
       }
@@ -305,7 +305,7 @@ static InterpretResult run() {
     }
     case OP_DEFINE_GLOBAL: {
       ObjString *name = READ_STRING();
-      tableSet(&vm.globals, OBJ_VAL(name), peek(0));
+      tableSet(&vm.globals, name, peek(0));
       pop();
       break;
     }
@@ -323,6 +323,38 @@ static InterpretResult run() {
       Value b = pop();
       Value a = pop();
       push(BOOL_VAL(valuesEqual(a, b)));
+      break;
+    }
+    case OP_GET_PROPERTY: {
+      if (!IS_INSTANCE(peek(0))) {
+        runtimeError("Only instances hae properties.");
+      return INTERPRET_RUNTIME_ERROR;
+      }
+
+      ObjInstance* instance = AS_INSTANCE(peek(0));
+      ObjString* name = READ_STRING();
+
+      Value value;
+      if (tableGet(&instance->fields, name, &value)) {
+        pop(); // Instance.
+        push(value);
+        break;
+      }
+
+      runtimeError("Undefined property '%s' ", name->chars);
+      return INTERPRET_RUNTIME_ERROR;
+    }
+    case OP_SET_PROPERTY: {
+      if (!IS_INSTANCE(peek(1))) {
+        runtimeError("Only instanes have fields");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+
+      ObjInstance* instance = AS_INSTANCE(peek(1));
+      tableSet(&instance->fields, READ_STRING(), peek(0));
+      Value value = pop();
+      pop();
+      push(value);
       break;
     }
     case OP_GREATER:

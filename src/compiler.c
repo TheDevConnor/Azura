@@ -524,6 +524,18 @@ static void call(bool canAssign) {
   emitBytes(OP_CALL, argCount);
 }
 
+static void dot(bool canAssign) {
+  consume(TOKEN_IDENTIFIER, "Expect property name after '.'");
+  uint8_t name = identifierConstant(&parser.previous);
+
+  if (canAssign && match(TOKEN_EQUAL))  {
+    expression();
+    emitBytes(OP_SET_PROPERTY, name);
+  } else {
+    emitBytes(OP_GET_PROPERTY, name);
+  }
+}
+
 static void unary(bool canAssign) {
   TokenType operationType = parser.previous.type;
 
@@ -870,21 +882,27 @@ ParseRule rules[] = {
     [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
-    [TOKEN_DOT] = {NULL, NULL, PREC_NONE},
-    [TOKEN_MINUS] = {unary, binary, PREC_TERM},
-    [TOKEN_PLUS] = {NULL, binary, PREC_TERM},
+
+    [TOKEN_DOT] = {NULL, dot, PREC_NONE},
+
+    [TOKEN_MINUS]     = {unary, binary, PREC_TERM},
+    [TOKEN_PLUS]      = {NULL, binary, PREC_TERM},
     [TOKEN_SEMICOLON] = {NULL, NULL, PREC_NONE},
-    [TOKEN_SLASH] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_STAR] = {NULL, binary, PREC_FACTOR},
-    [TOKEN_BANG] = {unary, NULL, PREC_NONE},
+    [TOKEN_SLASH]     = {NULL, binary, PREC_FACTOR},
+    [TOKEN_STAR]      = {NULL, binary, PREC_FACTOR},
+
+    [TOKEN_BANG]        = {unary, NULL, PREC_NONE},
     [TOKEN_BANG_EQUALS] = {NULL, binary, PREC_EQUALITY},
+
     [TOKEN_WALRUS] = {NULL, NULL, PREC_NONE},
-    [TOKEN_EQUAL] = {NULL, NULL, PREC_NONE},
+    [TOKEN_EQUAL]  = {NULL, NULL, PREC_NONE},
+
     [TOKEN_EQUAL_EQUAL]   = {NULL, binary, PREC_EQUALITY},
     [TOKEN_GREATER]       = {NULL, binary, PREC_COMPARASION},
     [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARASION},
     [TOKEN_LESS]          = {NULL, binary, PREC_COMPARASION},
-    [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARASION},
+    [TOKEN_LESS_EQUAL]    = {NULL, binary, PREC_COMPARASION},
+
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
