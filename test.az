@@ -1,5 +1,8 @@
-class Pair {} 
-have pair := Pair();
-pair.first = 1;
-pair.second = 2;
-info pair.first + pair.second; // Expected 3
+class Scone {
+    topping(first, secound) {
+        info "score with" + first + "and " + secound;
+    }
+}
+
+have scone := Scone();
+scone.topping("berries", "cream");
