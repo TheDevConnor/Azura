@@ -1,3 +1,5 @@
-class Foo {}
-
-info Foo()
+class Pair {} 
+have pair := Pair();
+pair.first = 1;
+pair.second = 2;
+info pair.first + pair.second; // Expected 3

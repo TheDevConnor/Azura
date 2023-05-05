@@ -80,19 +80,23 @@ void errorHandling(const char* source, const char* file_name) {
 
   initScanner(source);
 
-  // [.\src\examples\test.az]->2
-  printf("[[%s]]->[line::%d]\n\n", file_name, token.line);
+  if (parser.hadError == true) {
+    // [.\src\examples\test.az]->2
+    printf("[[%s]]->[line::%d]\n\n", file_name, token.line);
 
-  // This splits the source code into indevidual characters
-  for (;;) {
-    token = scanToken();
-    // we need to concat the line of the error
-    for (int i = 0; i < token.length; i++) {
-      printf("%c \n", token.start[i]);
+    // This splits the source code into indevidual characters
+    for (;;) {
+      token = scanToken();
+      // we need to concat the line of the error
+      for (int i = 0; i < token.length; i++) {
+        printf("%c \n", token.start[i]);
+      }
+      if (token.type == TOKEN_EOF) {
+          break;
+      }
     }
-    if (token.type == TOKEN_EOF) {
-        break;
-    }
+  } else {
+    // do Nothing
   }
 }
 
@@ -883,7 +887,7 @@ ParseRule rules[] = {
     [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
     [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
 
-    [TOKEN_DOT] = {NULL, dot, PREC_NONE},
+    [TOKEN_DOT] = {NULL, dot, PREC_CALL},
 
     [TOKEN_MINUS]     = {unary, binary, PREC_TERM},
     [TOKEN_PLUS]      = {NULL, binary, PREC_TERM},
