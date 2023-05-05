@@ -1,8 +1,13 @@
-class Scone {
-    topping(first, secound) {
-        info "score with" + first + "and " + secound;
+class Nested {
+    method() {
+        func functions() {
+            info this;
+        }
+
+        functions();
     }
 }
 
-have scone := Scone();
-scone.topping("berries", "cream");
+Nested().method();
+// This should say "Nested instance"
+// because we are printing out "this"
