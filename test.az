@@ -1,13 +1,15 @@
-class Nested {
-    method() {
-        func functions() {
-            info this;
-        }
+class CoffeeMaker {
+    init(coffee) {
+        this.coffee = coffee;
+    }
 
-        functions();
+    brew() {
+        info "Enjoy your cup of " + this.coffee;
+
+        // NO reusing the grounds!
+        this.coffee = nil;
     }
 }
 
-Nested().method();
-// This should say "Nested instance"
-// because we are printing out "this"
+have maker := CoffeeMaker("coffee and chicory");
+maker.brew();
