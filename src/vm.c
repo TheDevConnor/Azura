@@ -514,6 +514,13 @@ static InterpretResult run() {
     case OP_CLASS:
       push(OBJ_VAL(newClass(READ_STRING())));
       break;
+    case OP_INHERIT: {
+      Value superClass = peek(1);
+      ObjClass* subClass = AS_CLASS(peek(0));
+      tableAddAll(&AS_CLASS(superClass)->methods, &subClass->methods);
+      pop(); // SubClass
+      break;
+    }
     case OP_METHOD:
       defineMethod(READ_STRING());
       break;
