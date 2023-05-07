@@ -1,4 +1,4 @@
-class Math {
+class Math-as {
     add(a, b) {
         return a + b;
     }
@@ -6,14 +6,18 @@ class Math {
     sub(a, b) {
         return a - b;
     }
+}
 
+class Math < Math-as {
     mult(a, b) {
         return a * b;
     }
+
+    div(a, b) {
+        return a / b;
+    }
 }
 
-have math := Math();
+have operations := Math();
 
-info math.add(1, 3);  // Expect 4
-info math.sub(3, 1);  // Expect 2
-info math.mult(3, 3); // Expect 9
+info operations.add(1, 2); // expect 3
