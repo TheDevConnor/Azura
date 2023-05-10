@@ -37,3 +37,30 @@ Value tanNative(int argCount, Value* args) {
     }
     return NUMBER_VAL(tan(to_radians(AS_NUMBER(args[0]))));
 }
+
+Value asinNative(int argCount, Value* args) {
+    double arg = AS_NUMBER(args[0]);
+    if (argCount == 2 && AS_BOOL(args[1])) { 
+        // Second argument is a flag to indicate degrees
+        arg = to_radians(arg);
+    }
+    return NUMBER_VAL(asin(arg));
+}
+
+Value acosNative(int argCount, Value* args) {
+    double arg = AS_NUMBER(args[0]);
+    if (argCount == 2 && AS_BOOL(args[1])) { 
+        // Second argument is a flag to indicate degrees
+        arg = to_radians(arg);
+    }
+    return NUMBER_VAL(acos(arg));
+}
+
+Value atanNative(int argCount, Value* args) {
+    double arg = AS_NUMBER(args[0]);
+    if (argCount == 2 && AS_BOOL(args[1])) { 
+        // Second argument is a flag to indicate degrees
+        arg = to_radians(arg);
+    }
+    return NUMBER_VAL(atan(arg));
+}

@@ -14,13 +14,10 @@
 #include "table.h"
 #include "math.h"
 #include "value.h"
+#include "core.h"
 #include "vm.h"
 
 VM vm;
-
-static Value clockNative() {
-  return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
-}
 
 static void resetStack() { 
   vm.stackTop = vm.stack; 
@@ -56,22 +53,6 @@ static void runtimeError(const char *format, ...) {
   resetStack();
 }
 
-static void defineNative(const char* name, NativeFn function) {
-  push(OBJ_VAL(copyString(name, (int)strlen(name))));
-  push(OBJ_VAL(newNative(function)));
-  tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
-  pop();
-  pop();
-}
-
-void defineAllNative() {
-  defineNative("clock", clockNative);
-
-  defineNative("sin", sinNative);
-  defineNative("cos", cosNative);
-  defineNative("tan", tanNative);
-}
-
 void initVM() {
   resetStack();
   vm.objects = NULL;
@@ -82,7 +63,7 @@ void initVM() {
   vm.initString = NULL;
   vm.initString = copyString("init", 4);
 
-  defineAllNative();
+  defineAllNativeFunctions();
 }
 
 void freeVM() {
