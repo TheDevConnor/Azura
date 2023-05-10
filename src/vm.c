@@ -12,8 +12,8 @@
 #include "memory.h"
 #include "object.h"
 #include "table.h"
+#include "math.h"
 #include "value.h"
-#include "math.c"
 #include "vm.h"
 
 VM vm;
@@ -64,6 +64,14 @@ static void defineNative(const char* name, NativeFn function) {
   pop();
 }
 
+void defineAllNative() {
+  defineNative("clock", clockNative);
+
+  defineNative("sin", sinNative);
+  defineNative("cos", cosNative);
+  defineNative("tan", tanNative);
+}
+
 void initVM() {
   resetStack();
   vm.objects = NULL;
@@ -74,11 +82,7 @@ void initVM() {
   vm.initString = NULL;
   vm.initString = copyString("init", 4);
 
-  defineNative("clock", clockNative);
-
-  defineNative("sin", sinNative);
-  defineNative("cos", cosNative);
-  defineNative("tan", tanNative);
+  defineAllNative();
 }
 
 void freeVM() {

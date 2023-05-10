@@ -1,12 +1,12 @@
 {
-    have x := sin(30); // By default, the argument is in radians
-    info x; // Expect -0.9880316240928618 but we will get -0.988032
+    have x := sin(30); // By default, the argument is in degrees
+    info x; // Expect 0.5
 }
 {
-    have x := cos(30); // By default, the argument is in radians
-    info x; // Expect 0.15425144988758405 but we will get 0.154251
+    have x := cos(30, true); // When the second argument is true, the argument is in radians
+    info x; // Expect 0.8660254037844386
 }
 {
-    have x := tan(30); // By default, the argument is in radians
-    info x; // Expect -6.405331196646276 but we will get -6.40533
+    have x := tan(30); // By default, the argument is in degrees
+    info x;
 }

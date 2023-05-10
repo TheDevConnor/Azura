@@ -13,7 +13,8 @@
         "compare": "c",
         "chunk.h": "c",
         "math.h": "c",
-        "corecrt_math.h": "c"
+        "corecrt_math.h": "c",
+        "vm.h": "c"
     },
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#383b3b",
