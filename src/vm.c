@@ -12,7 +12,6 @@
 #include "memory.h"
 #include "object.h"
 #include "table.h"
-#include "math.h"
 #include "value.h"
 #include "core.h"
 #include "vm.h"
