@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <time.h>
 
 #include "chunk.h"
@@ -12,6 +13,7 @@
 #include "object.h"
 #include "table.h"
 #include "value.h"
+#include "math.c"
 #include "vm.h"
 
 VM vm;
@@ -73,6 +75,10 @@ void initVM() {
   vm.initString = copyString("init", 4);
 
   defineNative("clock", clockNative);
+
+  defineNative("sin", sinNative);
+  defineNative("cos", cosNative);
+  defineNative("tan", tanNative);
 }
 
 void freeVM() {

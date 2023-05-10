@@ -11,7 +11,9 @@
         "value.h": "c",
         "object.h": "c",
         "compare": "c",
-        "chunk.h": "c"
+        "chunk.h": "c",
+        "math.h": "c",
+        "corecrt_math.h": "c"
     },
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#383b3b",

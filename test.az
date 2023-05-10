@@ -1,23 +1,12 @@
-class Math-as {
-    add(a, b) {
-        return a + b;
-    }
-
-    sub(a, b) {
-        return a - b;
-    }
+{
+    have x := sin(30); // By default, the argument is in radians
+    info x; // Expect -0.9880316240928618 but we will get -0.988032
 }
-
-class Math < Math-as {
-    mult(a, b) {
-        return a * b;
-    }
-
-    div(a, b) {
-        return a / b;
-    }
+{
+    have x := cos(30); // By default, the argument is in radians
+    info x; // Expect 0.15425144988758405 but we will get 0.154251
 }
-
-have operations := Math();
-
-info operations.add(1, 2); // expect 3
+{
+    have x := tan(30); // By default, the argument is in radians
+    info x; // Expect -6.405331196646276 but we will get -6.40533
+}
