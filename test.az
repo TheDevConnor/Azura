@@ -1,5 +1,6 @@
 // This is a sample code in case you wish to use the Math class
 // That is showing an example of inheritance in Azura
+have start := clock();
 class Math {
     add(a, b) { return a + b; }
     sub(a, b) { return a - b; }
@@ -20,3 +21,6 @@ have circle := Circle(10);
 info circle._radius(); // expect 10
 info circle.area(); // expect 314.159
 info circle.circumference(); // expect 62.8318
+
+info "Program took:";
+info clock() - start; // expect 0.0000
