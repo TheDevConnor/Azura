@@ -1,26 +1,43 @@
-// This is a sample code in case you wish to use the Math class
-// That is showing an example of inheritance in Azura
-have start := clock();
-class Math {
-    add(a, b) { return a + b; }
-    sub(a, b) { return a - b; }
-    mul(a, b) { return a * b; }
-    div(a, b) { return a / b; }
+{
+    // This is a sample code in case you wish to use the Math class
+    // That is showing an example of inheritance in Azura
+    have start := clock();
+    class Math {
+        add(a, b) { return a + b; }
+        sub(a, b) { return a - b; }
+        mul(a, b) { return a * b; }
+        div(a, b) { return a / b; }
+    }
+
+    class Circle < Math {
+        init(radius) { this.radius = radius; }
+
+        area() { return this.mul(this.radius, this.radius) * pi(); }
+        circumference() { return this.mul(this.radius, 2) * pi(); }
+        _radius() { return this.radius; }
+    }
+
+    class Rectangle < Math {
+        init(width, height) { this.width = width; this.height = height; }
+
+        area() { return this.mul(this.width, this.height); }
+        perimeter() { return this.mul(this.add(this.width, this.height), 2); }
+    }
+
+    have circle := Circle(10);
+    have rectangle := Rectangle(10, 20);
+
+    info "Circle radius, area, and circumference:";
+    info circle._radius(); // expect 10
+    info circle.area(); // expect 314.159
+    info circle.circumference(); // expect 62.8318
+    info "";
+
+    info "Rectangle area and perimeter:";
+    info rectangle.area(); // expect 200
+    info rectangle.perimeter(); // expect 60
+    info "";
+
+    info "Program took:";
+    info clock() - start; // This will print the time taken to run the program
 }
-
-class Circle < Math {
-    init(radius) { this.radius = radius; }
-
-    area() { return this.mul(this.radius, this.radius) * pi(); }
-    circumference() { return this.mul(this.radius, 2) * pi(); }
-    _radius() { return this.radius; }
-}
-
-have circle := Circle(10);
-
-info circle._radius(); // expect 10
-info circle.area(); // expect 314.159
-info circle.circumference(); // expect 62.8318
-
-info "Program took:";
-info clock() - start; // expect 0.0000
