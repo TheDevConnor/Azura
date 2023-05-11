@@ -15,7 +15,9 @@
         "math.h": "c",
         "corecrt_math.h": "c",
         "vm.h": "c",
-        "memory.h": "c"
+        "memory.h": "c",
+        "xtr1common": "c",
+        "xutility": "c"
     },
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#383b3b",

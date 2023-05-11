@@ -4,7 +4,6 @@
 
 #include "chunk.h"
 #include "common.h"
-#include "compiler.h"
 #include "debug.h"
 #include "vm.h"
 
@@ -52,7 +51,6 @@ static char *readFile(const char *path) {
 static void runFile(const char *path) {
   char *source = readFile(path);
   InterpretResult result = interpret(source);
-  errorHandling(source, path);
 
   free(source);
 

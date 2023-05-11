@@ -453,7 +453,7 @@ static InterpretResult run() {
       printValue(pop());
       printf("\n");
       break;
-    case OP_SUPER_INOKE: {
+    case OP_SUPER_INVOKE: {
       ObjString* method = READ_STRING();
       int argCount = READ_BYTE();
       ObjClass* superclass = AS_CLASS(pop());
@@ -494,7 +494,7 @@ static InterpretResult run() {
       closedUpvalues(vm.stackTop - 1);
       pop();
       break;
-    case OP_RETRUN: {
+    case OP_RETURN: {
       Value result = pop();
       closedUpvalues(frame->slots);
       vm.frameCount--;
