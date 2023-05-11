@@ -269,15 +269,15 @@ static InterpretResult run() {
 
   for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
-    printf("        ");
-    for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
-      printf("[ ");
-      printValue(*slot);
-      printf(" ]");
-    }
-    printf("\n");
-    disassembleInstruction(&frame->closure->function->chunk,
-    (int)(frame->ip - frame->closure->function->chunk.code));
+    // printf("        ");
+    // for (Value *slot = vm.stack; slot < vm.stackTop; slot++) {
+    //   printf("[ ");
+    //   printValue(*slot);
+    //   printf(" ]");
+    // }
+    // printf("\n");
+    // disassembleInstruction(&frame->closure->function->chunk,
+    // (int)(frame->ip - frame->closure->function->chunk.code));
 #endif
 
     uint8_t instruction;
@@ -287,21 +287,12 @@ static InterpretResult run() {
       push(constant);
       break;
     }
-    case OP_NIL:
-      push(NIL_VAL);
-      break;
-    case OP_TRUE:
-      push(BOOL_VAL(true));
-      break;
-    case OP_FALSE:
-      push(BOOL_VAL(false));
-      break;
-    case OP_POP:
-      pop();
-      break;
-    case OP_DUP:
-      push(peek(0));
-      break;
+    case OP_NIL: push(NIL_VAL); break;
+    case OP_TRUE: push(BOOL_VAL(true)); break;
+    case OP_FALSE: push(BOOL_VAL(false)); break;
+
+    case OP_POP: pop(); break;
+    case OP_DUP: push(peek(0)); break;
     case OP_CALL: {
       int argCount = READ_BYTE();
       if (!callValue(peek(argCount), argCount)) {
@@ -422,12 +413,9 @@ static InterpretResult run() {
       push(value);
       break;
     }
-    case OP_GREATER:
-      BINARY_OP(BOOL_VAL, >);
-      break;
-    case OP_LESS:
-      BINARY_OP(BOOL_VAL, <);
-      break;
+    case OP_GREATER: BINARY_OP(BOOL_VAL, >); break;
+    case OP_LESS: BINARY_OP(BOOL_VAL, <); break;
+    
     case OP_ADD: {
       if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
         concatenate();

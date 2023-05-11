@@ -812,8 +812,7 @@ static void ifStatement() {
 
   patchJump(thenJump);
   emitByte(OP_POP);
-  if (match(TOKEN_ELSE))
-    statement();
+  if (match(TOKEN_ELSE)) statement();
 
   patchJump(elseJump);
 }
