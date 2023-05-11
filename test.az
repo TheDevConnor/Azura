@@ -1,14 +1,22 @@
-class A {
-    init(param) {
-        this.field = param;
-    }
-
-    test() {
-        return this.field;
-    }
+// This is a sample code in case you wish to use the Math class
+// That is showing an example of inheritance in Azura
+class Math {
+    add(a, b) { return a + b; }
+    sub(a, b) { return a - b; }
+    mul(a, b) { return a * b; }
+    div(a, b) { return a / b; }
 }
 
-class B < A {} // B inherits from A
+class Circle < Math {
+    init(radius) { this.radius = radius; }
 
-have b := B("test");
-info b.test(); // expect "test"
+    area() { return this.mul(this.radius, this.radius) * pi(); }
+    circumference() { return this.mul(this.radius, 2) * pi(); }
+    _radius() { return this.radius; }
+}
+
+have circle := Circle(10);
+
+info circle._radius(); // expect 10
+info circle.area(); // expect 314.159
+info circle.circumference(); // expect 62.8318
