@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "chunk.h"
 #include "common.h"
@@ -509,20 +510,42 @@ static void literal(bool canAssign) {
   }
 }
 
+// static void binary(bool canAssign) {
+//   TokenType operatorType = parser.previous.type;
+//   ParseRule* rule = getRule(operatorType);
+//   parsePrecedence((Precedence)(rule->precedence + 1));
+
+//   switch (operatorType) {
+// //> Types of Values comparison-operators
+//     case TOKEN_BANG_EQUALS:   emitBytes(OP_EQUAL, OP_NOT); break;
+//     case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
+//     case TOKEN_GREATER:       emitByte(OP_GREATER); break;
+//     case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
+//     case TOKEN_LESS:          emitByte(OP_LESS); break;
+//     case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
+// //< Types of Values comparison-operators
+//     case TOKEN_PLUS:          emitByte(OP_ADD); break;
+//     case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
+//     case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
+//     case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
+//     default: return; // Unreachable.
+//   }
+// }
+
 static void binary(bool canAssign) {
   TokenType operatorType = parser.previous.type;
   ParseRule* rule = getRule(operatorType);
   parsePrecedence((Precedence)(rule->precedence + 1));
 
   switch (operatorType) {
-//> Types of Values comparison-operators
+    // Types of Value comparison-operators
     case TOKEN_BANG_EQUALS:   emitBytes(OP_EQUAL, OP_NOT); break;
     case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
     case TOKEN_GREATER:       emitByte(OP_GREATER); break;
     case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
     case TOKEN_LESS:          emitByte(OP_LESS); break;
     case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
-//< Types of Values comparison-operators
+    // Types of Value arithmetic-operators
     case TOKEN_PLUS:          emitByte(OP_ADD); break;
     case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
     case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
@@ -530,6 +553,7 @@ static void binary(bool canAssign) {
     default: return; // Unreachable.
   }
 }
+
 
 static void call(bool canAssign) {
   uint8_t argCount = argumentList();
@@ -833,23 +857,51 @@ static void forStatement() {
   endScope();
 }
 
-static void ifStatement() {
-  consume(TOKEN_LEFT_PAREN, "Expected a '(' after the 'if keyword!'");
-  expression();
-  consume(TOKEN_RIGHT_PAREN, "Expected a ')' after the if conditions!");
+static bool inLoop = false;
+static bool inFunction = false;
 
-  int thenJump = emitJump(OP_JUMP_IF_FALSE);
-  emitByte(OP_POP);
-  statement();
-
-  int elseJump = emitJump(OP_JUMP);
-
-  patchJump(thenJump);
-  emitByte(OP_POP);
-  if (match(TOKEN_ELSE)) statement();
-
-  patchJump(elseJump);
+static void emitCodeDebugging(const char* format, ...) {
+#ifdef DEBUG_TRACE_EXECUTION
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+#endif
 }
+
+
+
+static void ifStatement() {
+  consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "Expect ')' after if condition.");
+
+  // Jump to the else branch if the condition is false.
+  int elseJump = emitJump(OP_JUMP_IF_FALSE);
+
+  // Emit code for the then branch if the condition is true.
+  emitCodeDebugging("Jumping to then: %d\n", currentChunk()->count);
+  statement();
+  int trueJump = emitJump(OP_JUMP);
+
+  // Patch the else jump.
+  patchJump(elseJump);
+
+  // If there's an else block, emit code for it.
+  if (match(TOKEN_ELSE)) {
+    statement();
+  }
+
+  // Patch the true jump.
+  patchJump(trueJump);
+
+  // If there was no return in the if statement, emit the OP_NIL instruction.
+  if (!inLoop && !inFunction) {
+    emitCodeDebugging("EMITTING OP_NIL\n");
+    emitByte(OP_NIL);
+  }
+}
+
 
 static void synchronize() {
   parser.panicMode = false;

@@ -225,8 +225,8 @@ static void defineMethod(ObjString* name) {
   pop();
 }
 
-static bool isFasly(Value value) {
-  return IS_NIL(value) || (IS_BOOL(value) && !IS_BOOL(value));
+static bool isFalsey(Value value) {
+  return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
 static void concatenate() {
@@ -308,7 +308,11 @@ static InterpretResult run() {
     }
     case OP_JUMP_IF_FALSE: {
       uint16_t offset = READ_SHORT();
-      if (isFasly(peek(0))) frame->ip += offset;
+      if (isFalsey(peek(0))) {
+        frame->ip += offset;
+      } else {
+        frame->ip += 3; // Skip the jump offset bytes
+      }
       break;
     }
     case OP_JUMP: {
@@ -415,7 +419,7 @@ static InterpretResult run() {
     }
     case OP_GREATER: BINARY_OP(BOOL_VAL, >); break;
     case OP_LESS: BINARY_OP(BOOL_VAL, <); break;
-    
+
     case OP_ADD: {
       if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
         concatenate();
@@ -440,7 +444,7 @@ static InterpretResult run() {
       BINARY_OP(NUMBER_VAL, /);
       break;
     case OP_NOT:
-      push(BOOL_VAL(isFasly(pop())));
+      push(BOOL_VAL(isFalsey(pop())));
       break;
     case OP_NEGATE:
       if (!IS_NUMBER(peek(0))) {
