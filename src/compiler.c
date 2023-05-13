@@ -857,20 +857,6 @@ static void forStatement() {
   endScope();
 }
 
-static bool inLoop = false;
-static bool inFunction = false;
-
-static void emitCodeDebugging(const char* format, ...) {
-#ifdef DEBUG_TRACE_EXECUTION
-  va_list args;
-  va_start(args, format);
-  vfprintf(stderr, format, args);
-  va_end(args);
-#endif
-}
-
-
-
 static void ifStatement() {
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
   expression();
@@ -878,9 +864,6 @@ static void ifStatement() {
 
   // Jump to the else branch if the condition is false.
   int elseJump = emitJump(OP_JUMP_IF_FALSE);
-
-  // Emit code for the then branch if the condition is true.
-  emitCodeDebugging("Jumping to then: %d\n", currentChunk()->count);
   statement();
   int trueJump = emitJump(OP_JUMP);
 
@@ -894,12 +877,6 @@ static void ifStatement() {
 
   // Patch the true jump.
   patchJump(trueJump);
-
-  // If there was no return in the if statement, emit the OP_NIL instruction.
-  if (!inLoop && !inFunction) {
-    emitCodeDebugging("EMITTING OP_NIL\n");
-    emitByte(OP_NIL);
-  }
 }
 
 
