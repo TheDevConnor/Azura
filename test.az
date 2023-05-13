@@ -9,7 +9,7 @@
         div(a, b) { return a / b; }
     }
 
-    class Circle < Math {
+    class Circle -> Math {
         init(radius) { this.radius = radius; }
 
         area() { return this.mul(this.radius, this.radius) * pi(); }
@@ -17,7 +17,7 @@
         _radius() { return this.radius; }
     }
 
-    class Rectangle < Math {
+    class Rectangle -> Math {
         init(width, height) { this.width = width; this.height = height; }
 
         area() { return this.mul(this.width, this.height); }

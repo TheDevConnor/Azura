@@ -243,8 +243,6 @@ Token scanToken() {
     return makeToken(TOKEN_COMMA);
   case '.':
     return makeToken(TOKEN_DOT);
-  case '-':
-    return makeToken(TOKEN_MINUS);
   case '+':
     return makeToken(TOKEN_PLUS);
   case '/':
@@ -253,6 +251,8 @@ Token scanToken() {
     return makeToken(TOKEN_STAR);
   case '#':
     return makeToken(TOKEN_HASTAG);
+  case '-':
+    return makeToken(match('>') ? TOKEN_INHERITANCE : TOKEN_MINUS);
   case '!':
     return makeToken(match('=') ? TOKEN_BANG_EQUALS : TOKEN_BANG);
   case '=':

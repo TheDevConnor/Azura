@@ -17,6 +17,7 @@ typedef enum {
   TOKEN_COLON,
   TOKEN_HASTAG,
   // One or two character tokens
+  TOKEN_INHERITANCE,
   TOKEN_BANG,
   TOKEN_BANG_EQUALS,
   TOKEN_EQUAL,

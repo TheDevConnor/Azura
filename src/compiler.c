@@ -721,7 +721,7 @@ static void classDeclaration() {
   currentClass = &classCompiler;
 
   // For super classes
-  if (match(TOKEN_LESS)) {
+  if (match(TOKEN_INHERITANCE)) {
     consume(TOKEN_IDENTIFIER, "expected a super class name!");
     variable(false);
 
