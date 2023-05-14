@@ -1,0 +1,75 @@
+class Toggle {
+    init(startState) { this.state = startState; }
+
+    value() { return this.state; }
+
+    activate() {
+        this.state = !this.state;
+        return this;
+    }
+}
+
+class NthToggle -> Toggle {
+    init(startState, maxCounter) {
+        super.init(startState);
+        this.countMax = maxCounter;
+        this.count = 0;
+    }
+
+    activate() {
+        this.count = this.count + 1;
+        if(this.count <= this.countMax) {
+            // Needs to be inversed.
+        } else {
+            super.activate();
+            this.count = 0;
+        }
+
+        return this;
+    }
+}
+
+have start := clock();
+have n := 1000000;
+have val := true;
+have toggle := Toggle(val);
+
+have i;
+for (i = 0; i < n;) {
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+    val = toggle.activate().value();
+
+    i = i + 1;
+}
+
+info toggle.value();
+
+val = true;
+have ntoggle := NthToggle(val, 3);
+
+have j;
+for (j = 0; j < n;) {
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+    val = ntoggle.activate().value();
+}
+
+info ntoggle.value();
+info clock() - start;
+
+// TODO: NOT WORKING, even though the code is correct.

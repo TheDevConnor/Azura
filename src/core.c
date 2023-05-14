@@ -25,6 +25,9 @@ static Value clockNative() {
 void defineAllNativeFunctions() {
     defineNative("clock", clockNative);
 
+    defineNative("toUpperCase", toUpperCaseNative);
+    defineNative("toLowerCase", toLowerCaseNative);
+
     defineNative("pi", piNative);
     defineNative("pow", powNative);
     defineNative("sqrt", sqrtNative);

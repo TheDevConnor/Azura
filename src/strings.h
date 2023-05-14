@@ -5,5 +5,6 @@
 #include "value.h"
 
 Value toUpperCaseNative(int argCount, Value* args);
+Value toLowerCaseNative(int argCount, Value* args);
 
 #endif

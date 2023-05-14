@@ -18,7 +18,8 @@ class Circle -> Math {
 
 have circle := Circle(30);
 info circle.area();
-info circle.circumference();
+have c := circle.circumference();
+info c;
 info "";
 
 {
