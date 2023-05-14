@@ -1,5 +1,3 @@
 info !true;    // expect: false
 info !false;   // expect: true
 info !!true;   // expect: true
-
-// TODO:: fix not expression

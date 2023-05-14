@@ -1,9 +1,32 @@
-have i;
-for (i = 0; i < 10;) {
-    info i;
+class Math {
+    // Basic Math Functions
+    add(a, b) { return a + b ; }
+    minus(a, b) { return a - b ; }
+    multiply(a, b) { return a * b ; }
+    divide(a, b) { return a / b ; }
+    square(a) { return a * a ; }
+}
 
-    if (i > 10) info i; 
-    else info i;
+class Circle -> Math {
+    init(radius) { this.radius = radius; }
 
-    i = i + 1;
+    // lets find the area of a circle
+    area() { return this.multiply(this.radius, this.radius) * pi(); }
+    // Lets fin the circumference of a circle
+    circumference() { return this.multiply(2, this.radius) * pi(); }
+}
+
+have circle := Circle(30);
+info circle.area();
+info circle.circumference();
+info "";
+
+{
+    // test out sin, cos, tan, asin, acos, atan
+    have x := 30;
+    info "This is testing out sin, cos and more";
+    // The default is in radians.
+    info sin(x);    // info asin(x);
+    info cos(x);    // info acos(x);
+    info tan(x);    // info atan(x);
 }

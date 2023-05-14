@@ -17,7 +17,8 @@
         "vm.h": "c",
         "memory.h": "c",
         "xtr1common": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "string.h": "c"
     },
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#383b3b",

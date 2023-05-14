@@ -4,6 +4,8 @@
 #include <time.h>
 
 #include "math.h"
+#include "string.h"
+
 #include "value.h"
 #include "table.h"
 #include "object.h"

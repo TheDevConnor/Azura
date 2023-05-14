@@ -21,5 +21,3 @@ info false != 0;       // expect: true
 info true != "true";   // expect: true
 info false != "false"; // expect: true
 info false != "";      // expect: true
-
-// TODO:: fix !=

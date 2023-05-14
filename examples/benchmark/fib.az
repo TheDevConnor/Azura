@@ -1,0 +1,10 @@
+// the fib using the closed formula
+// fib(n) = 1/ sqtr(5) * ( (1 + sqrt(5)) / 2 )^n - ( (1 - sqrt(5)) / 2 )^n )
+
+func fib(n) {
+    return (1 / sqrt(5)) * ( pow(((1 + sqrt(5)) / 2), n) - pow(((1 - sqrt(5)) / 2), n) );
+}
+
+have start := clock();
+info fib(100);
+info clock() - start;
