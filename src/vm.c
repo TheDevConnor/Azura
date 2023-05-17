@@ -309,9 +309,7 @@ static InterpretResult run() {
     case OP_JUMP_IF_FALSE: {
       uint16_t offset = READ_SHORT();
       if (isFalsey(peek(0))) {
-        frame->ip += offset;
-      } else {
-        frame->ip += 3; // Skip the jump offset bytes
+        frame->ip += offset - 3;
       }
       break;
     }

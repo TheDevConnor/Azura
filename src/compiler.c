@@ -144,12 +144,13 @@ static void emitByte(uint8_t byte) {
   writeChunk(currentChunk(), byte, parser.previous.line);
 }
 
-static int emitJump(uint8_t instruction) {
-  emitByte(instruction);
+static int emitJump(OpCode opcode) {
+  emitByte(opcode);
   emitByte(0xff);
   emitByte(0xff);
-  return currentChunk()->count - 2;
+  return currentChunk()->count - 3; // Adjust for the three bytes emitted for the jump instruction
 }
+
 
 static void emitBytes(uint8_t byte1, uint8_t byte2) {
   emitByte(byte1);
@@ -190,15 +191,15 @@ static void emitConstant(Value value) {
 }
 
 static void patchJump(int offset) {
-  // -2 adjust for the bytecode for the jump offset
-  size_t jump = currentChunk()->count - offset - 2;
+  // -2 to adjust for the bytecode for the jump offset itself.
+  int jump = currentChunk()->count - offset - 2;
 
-  if (jump > UINT16_MAX) { // One of the erros i got on stream was that I did <
-    error("Too much code in the chunk!");
+  if (jump > UINT16_MAX) {
+    error("Too much code to jump over.");
   }
 
-  currentChunk()->code[offset] = (jump >> 8) & 0xff;
-  currentChunk()->code[offset + 1] = jump & 0xff;
+  currentChunk()->code[offset + 1] = (jump >> 8) & 0xff;
+  currentChunk()->code[offset + 2] = jump & 0xff;
 }
 
 static void initCompiler(Compiler *compiler, FunctionType type) {
@@ -864,8 +865,12 @@ static void ifStatement() {
 
   // Jump to the else branch if the condition is false.
   int elseJump = emitJump(OP_JUMP_IF_FALSE);
+
+  // Emit code for the true branch.
   statement();
-  int trueJump = emitJump(OP_JUMP);
+
+  // If there's an else block, jump to the end of the if statement.
+  int endJump = emitJump(OP_JUMP);
 
   // Patch the else jump.
   patchJump(elseJump);
@@ -875,10 +880,9 @@ static void ifStatement() {
     statement();
   }
 
-  // Patch the true jump.
-  patchJump(trueJump);
+  // Patch the end jump.
+  patchJump(endJump);
 }
-
 
 static void synchronize() {
   parser.panicMode = false;
