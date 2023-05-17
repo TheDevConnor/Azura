@@ -1,10 +1,21 @@
-// the fib using the closed formula
-// fib(n) = 1/ sqtr(5) * ( (1 + sqrt(5)) / 2 )^n - ( (1 - sqrt(5)) / 2 )^n )
-
 func fib(n) {
     return (1 / sqrt(5)) * ( pow(((1 + sqrt(5)) / 2), n) - pow(((1 - sqrt(5)) / 2), n) );
 }
 
+info "fib closed formula";
 have start := clock();
-info fib(100);
+info fib(30);
+info clock() - start;
+
+func fib_re(n) {
+    if (n < 2) {
+        return n;
+    }
+
+    return fib_re(n - 1) + fib_re(n - 2);
+}
+
+info "fib recursive";
+have start := clock();
+info fib_re(30);
 info clock() - start;
