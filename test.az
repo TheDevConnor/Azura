@@ -1,40 +1,35 @@
-// class Math {
-//     // Basic Math Functions
-//     add(a, b) { return a + b ; }
-//     minus(a, b) { return a - b ; }
-//     multiply(a, b) { return a * b ; }
-//     divide(a, b) { return a / b ; }
-//     square(a) { return a * a ; }
-// }
+class Math {
+    add(a, b) { return a + b; }
+    subtract(a, b) { return a - b; }
+    multiply(a, b) { return a * b; }
+    divide(a, b) { return a / b; }
 
-// class Circle -> Math {
-//     init(radius) { this.radius = radius; }
+    mod(a, b) { return a % b; }
+    pow(a) { return a * a; }
 
-//     // lets find the area of a circle
-//     area() { return this.multiply(this.radius, this.radius) * pi(); }
-//     // Lets fin the circumference of a circle
-//     circumference() { return this.multiply(2, this.radius) * pi(); }
-// }
+    sin(a) { return sin(a); }
+    cos(a) { return cos(a); }
+    tan(a) { return tan(a); }
 
-// have circle := Circle(30);
-// info circle.area();
-// have c := circle.circumference();
-// info c;
-// info "";
-
-// {
-//     // test out sin, cos, tan, asin, acos, atan
-//     have x := 30;
-//     info "This is testing out sin, cos and more";
-//     // The default is in radians.
-//     info sin(x);    // info asin(x);
-//     info cos(x);    // info acos(x);
-//     info tan(x);    // info atan(x);
-// }
-
-have i;
-for (i = 0; i < 10;) {
-    info i;
-
-    i = i + 1;
+    asin(a) { return asin(a); }
+    acos(a) { return acos(a); }
+    atan(a) { return atan(a); }
 }
+
+have math := Math();
+
+{
+    info math.add(10, 3); // 13
+    info math.subtract(10, 3); // 7
+    info math.multiply(10, 3); // 30
+    info math.divide(10, 3); // 3.3333333333333335
+    info math.mod(10, 3); // 1
+    info math.pow(10); // 100
+    info math.sin(10); // -0.5440211108893698
+    info math.cos(10); // -0.8390715290764524
+    info math.tan(10); // 0.6483608274590866
+    info math.asin(10); // NaN
+    info math.acos(10); // NaN
+    info math.atan(10); // 1.4711276743037347
+}
+

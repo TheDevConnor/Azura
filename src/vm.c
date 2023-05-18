@@ -262,8 +262,8 @@ static InterpretResult run() {
       runtimeError("Operands must be a number");                               \
       return INTERPRET_RUNTIME_ERROR;                                          \
     }                                                                          \
-    double b = AS_NUMBER(pop());                                               \
-    double a = AS_NUMBER(pop());                                               \
+    int b = AS_NUMBER(pop());                                                  \
+    int a = AS_NUMBER(pop());                                                  \
     push(valueType(a op b));                                                   \
   } while (false)
 
@@ -440,6 +440,18 @@ static InterpretResult run() {
       break;
     case OP_DIVIDE:
       BINARY_OP(NUMBER_VAL, /);
+      break;
+    case OP_MODULO:
+      if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+        runtimeError("Operands must be numbers.");
+        return INTERPRET_RUNTIME_ERROR;
+      } else if (AS_NUMBER(peek(1)) == 0) {
+        runtimeError("Cannot divide by zero.");
+        return INTERPRET_RUNTIME_ERROR;
+      }
+      double b = AS_NUMBER(pop());
+      double a = AS_NUMBER(pop());
+      push(NUMBER_VAL(fmod(a, b)));
       break;
     case OP_NOT:
       push(BOOL_VAL(isFalsey(pop())));
