@@ -18,18 +18,16 @@ class Math {
 
 have math := Math();
 
-{
-    info math.add(10, 3); // 13
-    info math.subtract(10, 3); // 7
-    info math.multiply(10, 3); // 30
-    info math.divide(10, 3); // 3.3333333333333335
-    info math.mod(10, 3); // 1
-    info math.pow(10); // 100
-    info math.sin(10); // -0.5440211108893698
-    info math.cos(10); // -0.8390715290764524
-    info math.tan(10); // 0.6483608274590866
-    info math.asin(10); // NaN
-    info math.acos(10); // NaN
-    info math.atan(10); // 1.4711276743037347
-}
+info math.add(10, 3); // 13
+info math.subtract(10, 3); // 7
+info math.multiply(10, 3); // 30
+info math.divide(10, 3); // 3.3333333333333335
+info math.mod(10, 3); // 1
+info math.pow(10); // 100
+info math.sin(10); // -0.5440211108893698
+info math.cos(10); // -0.8390715290764524
+info math.tan(10); // 0.6483608274590866
+info math.asin(10); // NaN
+info math.acos(10); // NaN
+info math.atan(10); // 1.4711276743037347
 
