@@ -626,7 +626,7 @@ ParseRule rules[] = {
     [TOKEN_STRING]     = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER]     = {number, NULL, PREC_NONE},
 
-    [TOKEN_AND] = {NULL, and_, PREC_NONE},
+    [TOKEN_AND] = {NULL, and_, PREC_AND},
 
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_ELSE]  = {NULL, NULL, PREC_NONE},
@@ -639,7 +639,7 @@ ParseRule rules[] = {
 
     [TOKEN_NIL] = {literal, NULL, PREC_NONE},
 
-    [TOKEN_OR] = {NULL, or_, PREC_NONE},
+    [TOKEN_OR] = {NULL, or_, PREC_OR},
 
     [TOKEN_INFO]   = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
