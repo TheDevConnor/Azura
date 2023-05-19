@@ -2,20 +2,20 @@ class ScopeTimer {
     init() { this.start = clock(); }
 
     reset() { this.start = clock(); }
-    stop() { return clock() - this.start; }
 
     scope_name(n) {
         info n;
-        info this.stop();
+        return clock() - this.start;
     }
 }
 
+have timer := ScopeTimer();
+timer.init();
 
-have start := clock();
 have i;
-for (i = 0; i <= 100000;) {
+for (i = 0; i <= 10000;) {
     info i;
     i = i + 1;
 }
 
-info clock() - start;
+info timer.scope_name("---> loop <---");
