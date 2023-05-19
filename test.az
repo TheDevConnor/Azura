@@ -1,13 +1,3 @@
-func fib_re(n) {
-    if (n < 2) {
-        return n;
-    }
-
-    return fib_re(n - 1) + fib_re(n - 2);
-}
-
-info fib_re(30);
-
 class ScopeTimer {
     init() { this.start = clock(); }
 
@@ -16,8 +6,16 @@ class ScopeTimer {
 
     scope_name(n) {
         info n;
-        this.stop();
+        info this.stop();
     }
 }
 
-ScopeTimer().scope_name("test");
+
+have start := clock();
+have i;
+for (i = 0; i <= 100000;) {
+    info i;
+    i = i + 1;
+}
+
+info clock() - start;
