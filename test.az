@@ -10,12 +10,12 @@ class ScopeTimer {
     }
 }
 
-have timer = ScopeTimer();
+have timer : ScopeTimer();
 timer.init();
 timer.clock_timer();
 
 have i;
-for (i = ; i <= 10;) {
+for (i = 0; i <= 10;) {
     info i;
     i = i + 1;
 }

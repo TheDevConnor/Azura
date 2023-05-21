@@ -813,6 +813,11 @@ static void varDeclaration() {
           "'have add := 45.2 + 2'. Happy coding!");
   }
 
+  if (match(TOKEN_COLON)) {
+    error("For assining a variable use the operation of ':='.\nFor example "
+          "'have add := 45.2 + 2'. Happy coding!");
+  }
+
   consume(TOKEN_SEMICOLON,
           "Expected ';' after the declaration! \nTry something "
           "like 'have add := 45.2 + 2;' happy coding!");
