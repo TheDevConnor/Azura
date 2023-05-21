@@ -74,4 +74,4 @@ for (j = 0; j < n;) {
 info ntoggle.value();
 info clock() - start;
 
-// TODO: NOT WORKING, even though the code is correct.
+// FIXME: NOT WORKING, even though the code is correct.

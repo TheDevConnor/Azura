@@ -90,7 +90,7 @@ static void errorAt(Token *token, const char *message) {
 
   parser.panicMode = true;
 
-  fprintf(stderr, "[line: %d] Error", token->line);
+  fprintf(stderr, "[line: %d] [pos: %d] Error", token->line, token->pos - 1);
 
   if (token->type == TOKEN_EOF) {
     fprintf(stderr, " at end");
@@ -510,28 +510,6 @@ static void literal(bool canAssign) {
     return; // unreachable
   }
 }
-
-// static void binary(bool canAssign) {
-//   TokenType operatorType = parser.previous.type;
-//   ParseRule* rule = getRule(operatorType);
-//   parsePrecedence((Precedence)(rule->precedence + 1));
-
-//   switch (operatorType) {
-// //> Types of Values comparison-operators
-//     case TOKEN_BANG_EQUALS:   emitBytes(OP_EQUAL, OP_NOT); break;
-//     case TOKEN_EQUAL_EQUAL:   emitByte(OP_EQUAL); break;
-//     case TOKEN_GREATER:       emitByte(OP_GREATER); break;
-//     case TOKEN_GREATER_EQUAL: emitBytes(OP_LESS, OP_NOT); break;
-//     case TOKEN_LESS:          emitByte(OP_LESS); break;
-//     case TOKEN_LESS_EQUAL:    emitBytes(OP_GREATER, OP_NOT); break;
-// //< Types of Values comparison-operators
-//     case TOKEN_PLUS:          emitByte(OP_ADD); break;
-//     case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
-//     case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
-//     case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
-//     default: return; // Unreachable.
-//   }
-// }
 
 static void binary(bool canAssign) {
   TokenType operatorType = parser.previous.type;

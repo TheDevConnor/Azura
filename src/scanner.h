@@ -63,11 +63,12 @@ typedef struct {
   TokenType type;
   const char *start;
   int length;
-  int pos;
   int line;
+  int pos;
 } Token;
 
 void initScanner(const char *source);
+const char* getSourceLineStart(int line);
 Token scanToken();
 
 #endif

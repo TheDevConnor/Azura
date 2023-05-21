@@ -1,23 +1,26 @@
-class ScopeTimer {
-    init() { this.start = clock(); }
+// class ScopeTimer {
+//     init() { this.start = clock(); }
 
-    reset() { return this.start = clock(); }
-    clock_timer() { return clock() + this.start; }
+//     reset() { return this.start = clock(); }
+//     clock_timer() { return clock() + this.start; }
 
-    scope_name(n, c) {
-        info n;
-        info c;
-    }
-}
+//     scope_name(n, c) {
+//         info n;
+//         info c;
+//     }
+// }
 
-have timer := ScopeTimer();
-timer.init();
-timer.clock_timer();
+// have timer := ScopeTimer();
+// timer.init();
+// timer.clock_timer()
 
-have i;
-for (i = 0; i <= 10;) {
-    info i;
-    i = i + 1;
-}
+// have i;
+// for (i = 0; i <= 10;) {
+//     info i;
+//     i = i + 1;
+// }
 
-timer.scope_name("---> test <---", timer.clock_timer());
+// timer.scope_name("---> test <---", timer.clock_timer());
+
+have x : 10;
+info x;

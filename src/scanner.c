@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "common.h"
 #include "scanner.h"
@@ -8,14 +9,38 @@ typedef struct {
   const char *start;
   const char *current;
   int line;
+  const char* source; // New field to store the source code
 } Scanner;
 
 Scanner scanner;
 
-void initScanner(const char *source) {
+void initScanner(const char* source) {
   scanner.start = source;
   scanner.current = source;
   scanner.line = 1;
+  scanner.source = source;
+}
+
+const char* getSourceLineStart(int line) {
+  const char* current = scanner.source;
+  int currentLine = 1;
+
+  while (currentLine < line && *current != '\0') {
+    if (*current == '\n') {
+      currentLine++;
+    }
+    current++;
+  }
+
+  // Include leading whitespaces on the line
+  while (*current != '\n' && *current != '\0' && isspace(*current)) {
+    current--;
+  }
+  if (*current == '\n') {
+    current++;
+  }
+
+  return current;
 }
 
 static bool isAlpha(char c) {
@@ -54,6 +79,7 @@ static Token makeToken(TokenType type) {
   token.start = scanner.start;
   token.length = (int)(scanner.current - scanner.start);
   token.line = scanner.line;
+  token.pos = (int)(scanner.start - getSourceLineStart(token.line));
   return token;
 }
 
@@ -70,28 +96,28 @@ static void skipWhiteSpace() {
   for (;;) {
     char c = peek();
     switch (c) {
-    case ' ':
-    case '\r':
-    case '\t':
-      advance();
-      break;
-    case '\n':
-      scanner.line++;
-      advance();
-      break;
-    case '/':
-      if (peekNext() == '/') {
-        while (peek() != '\n' && !isAtEnd())
-          advance();
-      } else if (peekNext() == '*') {
-        // TODO:: Add in block comments
+      case ' ':
+      case '\r':
+      case '\t':
+        advance();
+        break;
+      case '\n':
+        scanner.line++;
+        advance();
+        break;
+      case '/':
+        if (peekNext() == '/') {
+          while (peek() != '\n' && !isAtEnd())
+            advance();
+        } else if (peekNext() == '*') {
+          // TODO: Add block comments handling
+          return;
+        } else {
+          return;
+        }
+        break;
+      default:
         return;
-      } else {
-        return;
-      }
-      break;
-    default:
-      return;
     }
   }
 }
