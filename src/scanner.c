@@ -156,6 +156,9 @@ static TokenType identifierType() {
         return checkKeyword(2, 0, "", TOKEN_IF);
       case 'n':
         return checkKeyword(2, 2, "fo", TOKEN_INFO);
+      // for import
+      case 'm':
+        return checkKeyword(2, 4, "port", TOKEN_IMPORT);
       }
     }
     break;
