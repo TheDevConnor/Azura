@@ -79,12 +79,6 @@ typedef struct ClassCompiler {
   bool hasSuperClass;
 } ClassCompiler;
 
-Parser parser;
-Compiler* current = NULL;
-ClassCompiler* currentClass = NULL;
-
-static Chunk* currentChunk() { return &current->function->chunk; }
-
 const char* Color (TerminalColor color) {
   switch (color) {
     case BLACK:           return "\033[0;30m";
@@ -101,24 +95,30 @@ const char* Color (TerminalColor color) {
   return "";
 }
 
+Parser parser;
+Compiler* current = NULL;
+ClassCompiler* currentClass = NULL;
+
+static Chunk* currentChunk() { return &current->function->chunk; }
+
 static void errorAt(Token *token, const char *message) {
   if (parser.panicMode)
     return;
 
   parser.panicMode = true;
 
-  fprintf(stderr, "\n[\033[0;33m line: %s%d%s] [\033[0;33m pos: %s%d%s] Error ", 
-  Color(RED), token->line, Color(RESET), Color(GREEN) ,token->pos - 1, Color(RESET));
+  fprintf(stderr, "\n[\033[0;33mline: %s%d%s] [\033[0;33mpos: %s%d%s] Error ", 
+    Color(CYAN), token->line, Color(RESET), Color(CYAN), token->pos - 1, Color(RESET));
 
   if (token->type == TOKEN_EOF) {
-    fprintf(stderr, " at end \n");
+    fprintf(stderr, "at end\n");
   } else if (token->type == TOKEN_ERROR) {
     // Nothing.
   } else {
-    fprintf(stderr, " at '%.*s' \n", token->length, token->start);
+    fprintf(stderr, "at '%.*s'\n", token->length, token->start);
   }
 
-  // Itereator over the tokens in the current line
+  // Iterate over the tokens in the current line
   const char* lineStart = getSourceLineStart(token->line);
   const char* lineEnd = lineStart;
   while (*lineEnd != '\n' && *lineEnd != '\0') lineEnd++;
@@ -135,6 +135,7 @@ static void errorAt(Token *token, const char *message) {
   fprintf(stderr, "\n%s\n", message);
   parser.hadError = true;
 }
+
 
 static void error(const char *message) { errorAt(&parser.previous, message); }
 
