@@ -10,6 +10,7 @@
 #include "compiler.h"
 #include "object.h"
 #include "scanner.h"
+#include "terminalColors.h"
 
 #ifdef DEBUG_PRINT_CODE
 #include "debug.h"
@@ -84,23 +85,54 @@ ClassCompiler* currentClass = NULL;
 
 static Chunk* currentChunk() { return &current->function->chunk; }
 
+const char* Color (TerminalColor color) {
+  switch (color) {
+    case BLACK:           return "\033[0;30m";
+    case GRAY:            return "\033[1;30m";
+    case RED:             return "\033[0;31m";
+    case GREEN:           return "\033[0;32m";
+    case YELLOW:          return "\033[0;33m";
+    case BLUE:            return "\033[0;34m";
+    case MAGENTA:         return "\033[0;35m";
+    case CYAN:            return "\033[0;36m";
+    case WHITE:           return "\033[0;37m";
+    case RESET:           return "\033[0m";
+  }
+  return "";
+}
+
 static void errorAt(Token *token, const char *message) {
   if (parser.panicMode)
     return;
 
   parser.panicMode = true;
 
-  fprintf(stderr, "[line: %d] [pos: %d] Error", token->line, token->pos - 1);
+  fprintf(stderr, "\n[\033[0;33m line: %s%d%s] [\033[0;33m pos: %s%d%s] Error ", 
+  Color(RED), token->line, Color(RESET), Color(GREEN) ,token->pos - 1, Color(RESET));
 
   if (token->type == TOKEN_EOF) {
-    fprintf(stderr, " at end");
+    fprintf(stderr, " at end \n");
   } else if (token->type == TOKEN_ERROR) {
     // Nothing.
   } else {
-    fprintf(stderr, " at '%.*s'", token->length, token->start);
+    fprintf(stderr, " at '%.*s' \n", token->length, token->start);
   }
 
-  fprintf(stderr, ": %s\n", message);
+  // Itereator over the tokens in the current line
+  const char* lineStart = getSourceLineStart(token->line);
+  const char* lineEnd = lineStart;
+  while (*lineEnd != '\n' && *lineEnd != '\0') lineEnd++;
+
+  // Print the line
+  fprintf(stderr, "%s%.*s\n", Color(MAGENTA), (int)(lineEnd - lineStart), lineStart);
+
+  // Print the pointer to the error
+  int numSpaces = token->pos - 1;
+  for (int i = 0; i < numSpaces; i++) fprintf(stderr, " ");
+  fprintf(stderr, "\033[0;31m^^^\033[0m");
+
+  // Print the error message
+  fprintf(stderr, "\n%s\n", message);
   parser.hadError = true;
 }
 
@@ -776,7 +808,7 @@ static void varDeclaration() {
   }
 
   if (match(TOKEN_EQUAL)) {
-    error("\nFor assining a variable use the operation of ':='.\nFor example "
+    error("For assining a variable use the operation of ':='.\nFor example "
           "'have add := 45.2 + 2'. Happy coding!");
   }
 
