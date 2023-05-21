@@ -108,7 +108,7 @@ static void errorAt(Token *token, const char *message) {
   parser.panicMode = true;
 
   fprintf(stderr, "\n[\033[0;33mline: %s%d%s] [\033[0;33mpos: %s%d%s] Error ", 
-    Color(CYAN), token->line, Color(RESET), Color(CYAN), token->pos - 1, Color(RESET));
+    Color(GREEN), token->line, Color(RESET), Color(GREEN), token->pos - 1, Color(RESET));
 
   if (token->type == TOKEN_EOF) {
     fprintf(stderr, "at end\n");
