@@ -10,6 +10,8 @@ class ScopeTimer {
     }
 }
 
+class time -> ScopeTimer {}
+
 have timer : ScopeTimer();
 timer.init();
 timer.clock_timer();
