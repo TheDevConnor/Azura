@@ -156,9 +156,6 @@ static TokenType identifierType() {
         return checkKeyword(2, 0, "", TOKEN_IF);
       case 'n':
         return checkKeyword(2, 2, "fo", TOKEN_INFO);
-      // for import
-      case 'm':
-        return checkKeyword(2, 4, "port", TOKEN_IMPORT);
       }
     }
     break;
@@ -171,6 +168,14 @@ static TokenType identifierType() {
         return checkKeyword(2, 1, "r", TOKEN_FOR);
       case 'u':
         return checkKeyword(2, 2, "nc", TOKEN_FUNC);
+      }
+    }
+    break;
+  case 'm':
+    if (scanner.current - scanner.start > 1){
+      switch (scanner.start[1]) {
+        case 'o':
+          return checkKeyword(2, 4, "dule", TOKEN_MODULE);
       }
     }
     break;

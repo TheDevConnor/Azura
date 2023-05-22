@@ -603,7 +603,6 @@ static void unary(bool canAssign) {
   }
 }
 
-
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
 
@@ -660,6 +659,8 @@ ParseRule rules[] = {
     [TOKEN_THIS]  = {this_, NULL, PREC_NONE},
 
     [TOKEN_TRUE]  = {literal, NULL, PREC_NONE},
+
+    [TOKEN_MODULE] = {NULL, NULL, PREC_NONE},
 
     [TOKEN_VAR]    = {NULL, NULL, PREC_NONE},
     [TOKEN_WHILE]  = {NULL, NULL, PREC_NONE},
@@ -902,6 +903,22 @@ static void ifStatement() {
   patchJump(endJump);
 }
 
+static void moduleDeclaration() {
+  // Parse the module name
+  consume(TOKEN_IDENTIFIER, "Expect module name.");
+
+  // Get the module name token
+  Token moduleName = parser.previous;
+
+  // Emit code to handle the module declaration
+  // You can replace this with your desired code generation logic
+  printf("Module declared: %.*s\n", moduleName.length, moduleName.start);
+  emitBytes(OP_MODULE, identifierConstant(&moduleName));
+
+  // Expect a semicolon after the module declaration
+  consume(TOKEN_SEMICOLON, "Expect ';' after module declaration.");
+}
+
 static void synchronize() {
   parser.panicMode = false;
 
@@ -915,6 +932,7 @@ static void synchronize() {
     case TOKEN_IF:
     case TOKEN_WHILE:
     case TOKEN_INFO:
+    case TOKEN_MODULE:
     case TOKEN_RETURN:
       return;
 
@@ -933,6 +951,8 @@ static void declaration() {
     funDeclaration();
   } else if(match(TOKEN_VAR)) {
     varDeclaration();
+  } else if (match(TOKEN_MODULE)) {
+    moduleDeclaration();
   } else {
     statement();
   }

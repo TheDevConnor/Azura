@@ -97,7 +97,8 @@ typedef enum {
 //> Methods and Initializers method-op
   OP_METHOD,
 //< Methods and Initializers method-op
-  OP_DUP
+  OP_DUP, 
+  OP_MODULE,
 } OpCode;
 
 typedef struct {

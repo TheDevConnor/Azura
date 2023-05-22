@@ -57,6 +57,11 @@ typedef struct ObjNative {
     NativeFn function;
 } ObjNative;
 
+typedef struct ObjModule {
+    Obj obj;
+    ObjString* name;
+} ObjModule;
+
 typedef struct ObjString {
     Obj obj;
     int length;
