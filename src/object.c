@@ -126,6 +126,16 @@ static void printFunction(ObjFunction* function) {
   printf("<fn %s>", function->name->chars);
 }
 
+static void printArray(ObjArray* array) {
+  printf("[");
+  for(int i = 0; i < array->count; i++) {
+    printValue(array->elements[i]);
+    if(i != array->count - 1) printf(", ");
+  }
+  printf("]\n"); // Add a newline character
+}
+
+
 void printObject(Value value) {
   switch(OBJ_TYPE(value)) {
     case OBJ_BOUND_METHOD:
@@ -151,6 +161,9 @@ void printObject(Value value) {
       break;
     case OBJ_UPVALUE:
       printf("upvalue");
+      break;
+    case OBJ_ARRAY:
+      printArray(AS_ARRAY(value));
       break;
   }
 }

@@ -1,1 +1,5 @@
-module test;
+have x := [1, 2, 3, 4, 5];
+info x;
+
+have y := ["a", "b", "c", "d" ,"e"];
+info y;

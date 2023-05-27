@@ -63,6 +63,12 @@ static void freeObject(Obj* object) {
             FREE(ObjString, object);
             break;
         }
+        case OBJ_ARRAY: {
+            ObjArray* array = (ObjArray*)object;
+            FREE_ARRAY(Value, array->elements, array->capacity - 1);
+            FREE(ObjArray, object);
+            break;
+        }
     }
 }
 

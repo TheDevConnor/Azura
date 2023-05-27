@@ -26,6 +26,7 @@ typedef struct {
 typedef enum {
   PREC_NONE,
   PREC_ASSINMENT,   // :=
+  PREC_ARRAY,       // []
   PREC_OR,          // or
   PREC_AND,         // and
   PREC_EQUALITY,    // == !=
@@ -292,6 +293,9 @@ static void endScope() {
 }
 
 static void expression();
+
+static void array(bool canAssign);
+
 static void statement();
 static void declaration();
 static ParseRule *getRule(TokenType type);
@@ -603,6 +607,27 @@ static void unary(bool canAssign) {
   }
 }
 
+static void array(bool canAssign) {
+  // Emit the ARRAY instruction
+  emitByte(OP_ARRAY);
+
+  if (!check(TOKEN_RIGHT_BRACKET)) {
+    do {
+      // Parse array elements recursively
+      expression();
+      if (currentChunk()->count > 255) {
+        error("Can't have more than 255 elements in an array!");
+      }
+    } while (match(TOKEN_COMMA));
+  }
+
+  // Expect a closing bracket
+  consume(TOKEN_RIGHT_BRACKET, "Expected ']' after array elements!");
+
+  // Emit the ARRAY_END instruction
+  emitByte(OP_ARRAY_END);
+}
+
 ParseRule rules[] = {
     [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
 
@@ -631,6 +656,9 @@ ParseRule rules[] = {
     [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARASION},
     [TOKEN_LESS]          = {NULL, binary, PREC_COMPARASION},
     [TOKEN_LESS_EQUAL]    = {NULL, binary, PREC_COMPARASION},
+
+    [TOKEN_LEFT_BRACKET]  = {array, NULL, PREC_ASSINMENT},
+    [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
 
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING]     = {string, NULL, PREC_NONE},

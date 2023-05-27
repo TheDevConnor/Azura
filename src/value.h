@@ -21,10 +21,12 @@ typedef uint64_t Value;
 
 #define IS_BOOL(v) ((v) == TRUE_VAL || (v) == FALSE_VAL)
 #define IS_NIL(value)     ((value) == NIL_VAL)
+#define IS_ARRAY(value)   (((value) & (QNAN | TAG_FALSE)) == (QNAN | TAG_FALSE))
 #define IS_NUMBER(value)   (((value) & QNAN) != QNAN)
 #define IS_OBJ(value)     (((value) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
 
 #define AS_BOOL(value)    ((value) == TRUE_VAL)
+#define AS_ARRAY(value)   ((ObjArray*)AS_OBJ(value))
 #define AS_NUMBER(value) valueToNum(value)
 #define AS_OBJ(value)     ((Obj*)(uintptr_t)((value) & ~(SIGN_BIT | QNAN)))
 

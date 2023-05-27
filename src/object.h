@@ -28,6 +28,7 @@
 
 typedef enum {
     OBJ_BOUND_METHOD,
+    OBJ_ARRAY,
     OBJ_CLASS,
     OBJ_INSTANCE,
     OBJ_CLOSURE,
@@ -68,6 +69,12 @@ typedef struct ObjString {
     char* chars;
     uint32_t hash;
 } ObjString;
+
+typedef struct ObjArray {
+    int count;
+    int capacity;
+    Value* elements;
+} ObjArray;
 
 typedef struct ObjUpvalue {
     Obj obj;

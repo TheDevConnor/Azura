@@ -99,6 +99,10 @@ typedef enum {
 //< Methods and Initializers method-op
   OP_DUP, 
   OP_MODULE,
+  OP_ARRAY,
+  OP_ARRAY_END,
+  OP_ARRAY_ACCESS,
+  OP_ARRAY_ACCESS_END,
 } OpCode;
 
 typedef struct {

@@ -243,8 +243,17 @@ static void concatenate() {
   push(OBJ_VAL(result));
 }
 
+static ObjArray* newArray() {
+  ObjArray* array = ALLOCATE(ObjArray, 1);
+  array->count = 0;
+  array->capacity = 0;
+  array->elements = NULL;
+  return array;
+}
+
 static InterpretResult run() {
   CallFrame* frame = &vm.frames[vm.frameCount - 1];
+  ObjArray* currentArray = NULL;
 
 #define READ_BYTE() (*frame->ip++)
 
@@ -540,6 +549,14 @@ static InterpretResult run() {
     }
     case OP_METHOD:
       defineMethod(READ_STRING());
+      break;
+    case OP_ARRAY_ACCESS:
+      currentArray = newArray();
+      push(OBJ_VAL(currentArray));
+      break;
+    case OP_ARRAY_ACCESS_END:
+      // Clean up the stack after the array access
+      pop();
       break;
   }
 }
