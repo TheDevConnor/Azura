@@ -1,5 +1,13 @@
 have x := [1, 2, 3, 4, 5];
-info x;
+// info x;
 
+// TODO: Y should be pointing to the first element a instead of the last in the array which is e
 have y := ["a", "b", "c", "d" ,"e"];
-info y;
+// info y;
+
+// Get the nth element of a array
+func get_nth(arr, n) {
+    return arr - n;
+}
+
+info get_nth(x, 2);
