@@ -155,10 +155,6 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     return simpleInstruction("OP_ARRAY", offset);
   case OP_ARRAY_END: 
     return simpleInstruction("OP_ARRAY_END", offset);
-  case OP_ARRAY_ACCESS:
-    return simpleInstruction("OP_ARRAY_ACCESS", offset);
-  case OP_ARRAY_ACCESS_END:
-    return simpleInstruction("OP_ARRAY_ACCESS_END", offset);
   default:
     printf("Unkown opcode %d\n", instruction);
     return offset + 1;

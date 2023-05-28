@@ -8,6 +8,7 @@
 #include "chunk.h"
 #include "common.h"
 #include "compiler.h"
+#include "vm.h"
 #include "object.h"
 #include "scanner.h"
 #include "terminalColors.h"
@@ -607,16 +608,28 @@ static void unary(bool canAssign) {
   }
 }
 
+// TODO: Still getting this to work
 static void array(bool canAssign) {
   // Emit the ARRAY instruction
   emitByte(OP_ARRAY);
+
+  ArrayValueHolder holder;
+  holder.numElements = 0;
+  holder.elements = malloc(sizeof(int) * MAX_ARRAY_SIZE);
 
   if (!check(TOKEN_RIGHT_BRACKET)) {
     do {
       // Parse array elements recursively
       expression();
-      if (currentChunk()->count > 255) {
-        error("Can't have more than 255 elements in an array!");
+
+      // Store the current elements in the holder struct
+      holder.elements[holder.numElements] = currentChunk()->constants.count - 1;
+      holder.numElements++;
+
+      // Check if the array is full
+      if (holder.numElements > MAX_ARRAY_SIZE) {
+        free(holder.elements);
+        error("Too many elements in the array!");
       }
     } while (match(TOKEN_COMMA));
   }
@@ -626,6 +639,14 @@ static void array(bool canAssign) {
 
   // Emit the ARRAY_END instruction
   emitByte(OP_ARRAY_END);
+
+  // Push the final array on the stack
+  emitConstant(OBJ_VAL(newArray(holder.elements, holder.numElements)));
+
+  // Free the elements array in case of an error
+  if (holder.numElements > MAX_ARRAY_SIZE) {
+    free(holder.elements);
+  }
 }
 
 ParseRule rules[] = {

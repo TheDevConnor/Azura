@@ -101,8 +101,6 @@ typedef enum {
   OP_MODULE,
   OP_ARRAY,
   OP_ARRAY_END,
-  OP_ARRAY_ACCESS,
-  OP_ARRAY_ACCESS_END,
 } OpCode;
 
 typedef struct {

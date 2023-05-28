@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <math.h>
 #include <time.h>
 
@@ -243,12 +244,35 @@ static void concatenate() {
   push(OBJ_VAL(result));
 }
 
-static ObjArray* newArray() {
-  ObjArray* array = ALLOCATE(ObjArray, 1);
-  array->count = 0;
-  array->capacity = 0;
-  array->elements = NULL;
-  return array;
+// TODO: FINISH THIS
+ObjArray* newArray(int* elements, int numElements) {
+  printf("Number of elements: %d\n", numElements);
+  
+  for (int i = 0; i < numElements; i++) {
+    printf("Element %d: %d\n", i, elements[i]);
+  }
+
+  // Allocate memory for the ArrayValueHolder struct
+  ArrayValueHolder* array = malloc(sizeof(ArrayValueHolder));
+  if (array == NULL) {
+    // Handle memory allocation failure
+    return NULL;
+  }
+
+  // Set the values of the ArrayValueHolder struct
+  array->numElements = numElements;
+  array->elements = malloc(sizeof(int) * numElements);
+  if (array->elements == NULL) {
+    // Handle memory allocation failure
+    free(array);
+    return NULL;
+  }
+
+  for (int i = 0; i < numElements; i++) {
+    array->elements[i] = elements[i];
+  }
+
+  return (ObjArray*)array;
 }
 
 static InterpretResult run() {
@@ -550,12 +574,27 @@ static InterpretResult run() {
     case OP_METHOD:
       defineMethod(READ_STRING());
       break;
-    case OP_ARRAY_ACCESS:
-      currentArray = newArray();
-      push(OBJ_VAL(currentArray));
+    // TODO: FINISH THIS
+    case OP_ARRAY: {
+      int numElements = READ_BYTE(); // Determine the number of elements in the array
+      int* elements = ALLOCATE(int, numElements); // Allocate memory for the elements
+
+      for (int i = 0; i < numElements; i++) {
+        elements[i] = AS_NUMBER(pop());
+      }
+
+      ArrayValueHolder* array = ALLOCATE(ArrayValueHolder, 1); // Allocate memory for the ArrayValueHolder struct
+      numElements = array->numElements; // Set the number of elements in the ArrayValueHolder struct
+      elements = array->elements; // Set the elements of the ArrayValueHolder struct
+
+      printf("Number of elements: %d\n", numElements);
+      printf("Element: %d\n", elements);
+
+      currentArray = (ObjArray*)array;
+      push(currentArray);
       break;
-    case OP_ARRAY_ACCESS_END:
-      // Clean up the stack after the array access
+    }
+    case OP_ARRAY_END:
       pop();
       break;
   }

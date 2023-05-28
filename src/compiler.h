@@ -5,6 +5,7 @@
 #include "vm.h"
 
 #define MAX_CASES 256
+#define MAX_ARRAY_SIZE 256
 ObjFunction* compile(const char* source);
 
 #endif

@@ -33,6 +33,12 @@ typedef enum {
   INTERPRET_RUNTIME_ERROR,
 } InterpretResult;
 
+// TODO: Move this to a separate file.
+typedef struct ArrayValueHolder {
+  int* elements;
+  int numElements;
+} ArrayValueHolder;
+
 extern VM vm;
 
 void initVM();
@@ -40,5 +46,7 @@ void freeVM();
 InterpretResult interpret(const char *source);
 void push(Value value);
 Value pop();
+
+ObjArray* newArray(int* elements, int numElements);
 
 #endif

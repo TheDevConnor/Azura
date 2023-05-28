@@ -71,9 +71,9 @@ typedef struct ObjString {
 } ObjString;
 
 typedef struct ObjArray {
-    int count;
-    int capacity;
-    Value* elements;
+   int capacity;    // The current capacity of the array.
+   int count;       // The number of elements in the array.
+   Value* elements; // Pointer to the elements of the array.
 } ObjArray;
 
 typedef struct ObjUpvalue {

@@ -1,13 +1,4 @@
 have x := [1, 2, 3, 4, 5];
-// info x;
-
-// TODO: Y should be pointing to the first element a instead of the last in the array which is e
-have y := ["a", "b", "c", "d" ,"e"];
-// info y;
-
-// Get the nth element of a array
-func get_nth(arr, n) {
-    return arr - n;
-}
-
-info get_nth(x, 2);
+info x; // [1, 2] TODO: should be [1, 2] but we get 2 instead of [1, 2]
+        // I think this is because we are not using the correct type for the info function
+        // Or it could be how we are handling arrays in the parser

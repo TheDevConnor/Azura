@@ -20,7 +20,8 @@
         "xutility": "c",
         "string.h": "c",
         "bit": "c",
-        "cstddef": "c"
+        "cstddef": "c",
+        "table.h": "c"
     },
     "workbench.colorCustomizations": {
         "tab.activeBackground": "#383b3b",
